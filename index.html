@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大湾区全科智能刷题系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#4080FF',
+                        light: '#E8F3FF',
+                        dark: '#0E42D2',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F'
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Microsoft YaHei', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .page { display: none; }
+        .page.active { display: block; }
+        .fade-in { animation: fadeIn 1s ease-in-out; }
+        .slide-up { animation: slideUp 0.8s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .watermark {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: rgba(22, 93, 255, 0.2);
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .option-btn:hover { transform: translateY(-2px); transition: all 0.2s; }
+        .card-hover:hover { box-shadow: 0 10px 25px rgba(22, 93, 255, 0.15); transition: all 0.3s; }
+        .loading-mask {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            width: 40px; height: 40px;
+            border: 3px solid #E8F3FF;
+            border-top-color: #165DFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            z-index: 10000;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 全局水印 -->
+    <div class="watermark">大湾区智能刷题系统 © 专属版</div>
+    
+    <!-- 全局加载遮罩 -->
+    <div id="global-loading" class="loading-mask">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto mb-3"></div>
+            <div class="text-gray-500 text-sm">系统加载中...</div>
+        </div>
+    </div>
+
+    <!-- 1. 欢迎动画页 -->
+    <div id="welcome-page" class="page min-h-screen bg-gradient-to-br from-primary to-dark flex flex-col items-center justify-center text-white">
+        <div class="text-center fade-in">
+            <div class="text-6xl font-bold mb-4">大湾区</div>
+            <div class="text-3xl mb-8">全科智能刷题系统</div>
+            <div class="text-lg text-blue-100 mb-12">真题汇编 · AI出题 · 精准提分</div>
+            <div class="w-64 h-2 bg-blue-900 rounded-full overflow-hidden mx-auto">
+                <div id="loading-bar" class="h-full bg-white rounded-full" style="width: 0%; transition: width 3s ease;"></div>
+            </div>
+            <button onclick="skipWelcome()" class="mt-8 text-blue-200 hover:text-white text-sm">跳过动画</button>
+        </div>
+    </div>
+
+    <!-- 2. 登录页 -->
+    <div id="login-page" class="page min-h-screen flex items-center justify-center bg-light">
+        <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md slide-up">
+            <h2 class="text-2xl font-bold text-primary text-center mb-6">用户登录</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">用户名</label>
+                    <input type="text" id="login-username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">密码</label>
+                    <input type="password" id="login-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" required>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg hover:bg-dark transition mb-4">登录</button>
+                <div class="text-center text-sm text-gray-600">
+                    没有账号？<a href="javascript:goToPage('register-page')" class="text-primary hover:underline">立即注册</a>
+                </div>
+                <div class="text-center text-xs text-gray-400 mt-4">
+                    <a href="javascript:goToPage('teacher-login-page')" class="hover:text-primary">教师后台入口</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. 注册页 -->
+    <div id="register-page" class="page min-h-screen flex items-center justify-center bg-light">
+        <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md slide-up">
+            <h2 class="text-2xl font-bold text-primary text-center mb-2">用户注册</h2>
+            <p class="text-center text-gray-500 text-sm mb-6">注册需使用邀请码，购买请联系开发者</p>
+            
+            <div class="bg-blue-50 p-4 rounded-lg mb-6 text-sm">
+                <div class="font-bold text-primary mb-2">会员套餐</div>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="font-bold">月会员</div>
+                        <div class="text-primary font-bold">¥39</div>
+                        <div class="text-xs text-gray-500">30天有效期</div>
+                    </div>
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="font-bold">年会员</div>
+                        <div class="text-primary font-bold">¥89</div>
+                        <div class="text-xs text-gray-500">365天有效期</div>
+                    </div>
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="font-bold">永久会员</div>
+                        <div class="text-primary font-bold">¥169</div>
+                        <div class="text-xs text-gray-500">终身使用</div>
+                    </div>
+                </div>
+            </div>
+
+            <form onsubmit="handleRegister(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">用户名</label>
+                    <input type="text" id="reg-username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">设置密码</label>
+                    <input type="password" id="reg-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">邀请码</label>
+                    <input type="text" id="reg-invite" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" placeholder="请输入购买的邀请码" required>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg hover:bg-dark transition mb-4">注册并激活会员</button>
+                <div class="text-center text-sm text-gray-600">
+                    已有账号？<a href="javascript:goToPage('login-page')" class="text-primary hover:underline">返回登录</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. 主页（选题界面） -->
+    <div id="home-page" class="page min-h-screen bg-gray-50">
+        <header class="bg-primary text-white p-4 shadow-md">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="font-bold text-xl">大湾区智能刷题系统</div>
+                <div class="flex items-center gap-4 text-sm">
+                    <span id="user-info"></span>
+                    <button onclick="logout()" class="bg-white/20 px-3 py-1 rounded hover:bg-white/30">退出</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-6">
+            <!-- 会员到期提醒 -->
+            <div id="expire-tip" class="hidden bg-warning/10 border border-warning/30 text-warning p-4 rounded-lg mb-6">
+                ⚠️ 会员即将到期，请及时续费，避免影响使用
+            </div>
+
+            <!-- 功能卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div onclick="showPracticePanel()" class="bg-white p-6 rounded-xl shadow card-hover cursor-pointer text-center">
+                    <div class="text-4xl mb-3">📝</div>
+                    <div class="font-bold text-lg text-gray-800">同步刷题</div>
+                    <div class="text-sm text-gray-500 mt-1">按城市年级题型练习</div>
+                </div>
+                <div onclick="goToPage('wrong-page')" class="bg-white p-6 rounded-xl shadow card-hover cursor-pointer text-center">
+                    <div class="text-4xl mb-3">📕</div>
+                    <div class="font-bold text-lg text-gray-800">错题本</div>
+                    <div class="text-sm text-gray-500 mt-1">错题重做巩固薄弱</div>
+                </div>
+                <div onclick="goToPage('record-page')" class="bg-white p-6 rounded-xl shadow card-hover cursor-pointer text-center">
+                    <div class="text-4xl mb-3">📊</div>
+                    <div class="font-bold text-lg text-gray-800">学习报告</div>
+                    <div class="text-sm text-gray-500 mt-1">查看学习数据与建议</div>
+                </div>
+                <div onclick="goToPage('parent-paper-page')" class="bg-white p-6 rounded-xl shadow card-hover cursor-pointer text-center">
+                    <div class="text-4xl mb-3">📄</div>
+                    <div class="font-bold text-lg text-gray-800">自主出卷</div>
+                    <div class="text-sm text-gray-500 mt-1">家长自定义生成试卷</div>
+                </div>
+            </div>
+
+            <!-- 刷题选择面板 -->
+            <div id="practice-panel" class="bg-white rounded-xl shadow p-6 hidden">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">开始练习</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">选择城市</label>
+                        <select id="select-city" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                            <option value="guangzhou">广州</option>
+                            <option value="shenzhen">深圳</option>
+                            <option value="foshan">佛山</option>
+                            <option value="dongguan">东莞</option>
+                            <option value="zhongshan">中山</option>
+                            <option value="zhuhai">珠海</option>
+                            <option value="huizhou">惠州</option>
+                            <option value="jiangmen">江门</option>
+                            <option value="zhaoqing">肇庆</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">选择年级</label>
+                        <select id="select-grade" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                            <optgroup label="小学">
+                                <option value="1">一年级</option>
+                                <option value="2">二年级</option>
+                                <option value="3">三年级</option>
+                                <option value="4">四年级</option>
+                                <option value="5">五年级</option>
+                                <option value="6">六年级</option>
+                            </optgroup>
+                            <optgroup label="初中">
+                                <option value="7">七年级</option>
+                                <option value="8">八年级</option>
+                                <option value="9">九年级</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">题目类型</label>
+                        <select id="select-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                            <option value="calc">简便计算</option>
+                            <option value="word">应用题</option>
+                            <option value="choice">选择题</option>
+                            <option value="fill">填空题</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <button onclick="startPractice('real')" class="flex-1 bg-primary text-white py-3 rounded-lg hover:bg-dark transition font-medium">
+                        真题模式（本地真题库）
+                    </button>
+                    <button onclick="startPractice('ai')" class="flex-1 bg-secondary text-white py-3 rounded-lg hover:bg-dark transition font-medium">
+                        AI智能出题（自适应难度）
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 5. 刷题页面 -->
+    <div id="practice-page" class="page min-h-screen bg-gray-50">
+        <header class="bg-primary text-white p-4 shadow-md">
+            <div class="max-w-4xl mx-auto flex justify-between items-center">
+                <button onclick="confirmQuitPractice()" class="text-white hover:text-blue-200">← 返回</button>
+                <div class="font-bold">答题练习</div>
+                <div id="question-progress" class="text-sm">1 / 10</div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-6">
+            <div class="bg-white rounded-xl shadow p-8 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <span id="question-type-tag" class="bg-blue-100 text-primary text-sm px-3 py-1 rounded-full">计算题</span>
+                    <span id="question-source" class="text-gray-400 text-sm">真题来源：广州2023期末</span>
+                </div>
+                <div id="question-content" class="text-xl text-gray-800 mb-8 leading-relaxed min-h-[100px]"></div>
+                
+                <!-- 分数输入提示 -->
+                <div id="fraction-tip" class="hidden bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-4 text-sm text-yellow-800">
+                    💡 提示：分数请按「分子/分母」格式输入，例如：3/4 表示四分之三；带分数请写成假分数形式
+                </div>
+
+                <!-- 选择题选项 -->
+                <div id="choice-options" class="space-y-3 mb-6 hidden">
+                    <button class="option-btn w-full text-left p-4 border border-gray-200 rounded-lg hover:border-primary hover:bg-blue-50" onclick="selectOption(this, 'A')">A. </button>
+                    <button class="option-btn w-full text-left p-4 border border-gray-200 rounded-lg hover:border-primary hover:bg-blue-50" onclick="selectOption(this, 'B')">B. </button>
+                    <button class="option-btn w-full text-left p-4 border border-gray-200 rounded-lg hover:border-primary hover:bg-blue-50" onclick="selectOption(this, 'C')">C. </button>
+                    <button class="option-btn w-full text-left p-4 border border-gray-200 rounded-lg hover:border-primary hover:bg-blue-50" onclick="selectOption(this, 'D')">D. </button>
+                </div>
+
+                <!-- 填空/计算输入框 -->
+                <div id="answer-input-area" class="mb-6">
+                    <input type="text" id="user-answer" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary text-lg" placeholder="请输入答案">
+                </div>
+
+                <div class="flex gap-4">
+                    <button onclick="submitAnswer()" id="submit-btn" class="flex-1 bg-primary text-white py-3 rounded-lg hover:bg-dark transition font-medium">提交答案</button>
+                    <button onclick="nextQuestion()" id="next-btn" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition font-medium hidden">下一题</button>
+                </div>
+            </div>
+
+            <!-- 答案解析 -->
+            <div id="analysis-panel" class="border rounded-xl p-6 hidden">
+                <div class="font-bold mb-2" id="result-text">回答正确 ✓</div>
+                <div class="text-gray-700">
+                    <span class="font-medium">正确答案：</span><span id="correct-answer"></span>
+                </div>
+                <div class="text-gray-600 mt-2">
+                    <span class="font-medium">解析：</span><span id="answer-analysis"></span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 6. 错题本 -->
+    <div id="wrong-page" class="page min-h-screen bg-gray-50">
+        <header class="bg-primary text-white p-4 shadow-md">
+            <div class="max-w-4xl mx-auto flex justify-between items-center">
+                <button onclick="goToPage('home-page')" class="text-white hover:text-blue-200">← 返回</button>
+                <div class="font-bold">我的错题本</div>
+                <div></div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-6">
+            <div class="bg-white rounded-xl shadow p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">错题列表</h3>
+                    <div class="flex gap-2">
+                        <button onclick="clearFinishedWrong()" class="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
+                            清除已掌握
+                        </button>
+                        <button onclick="redoWrongQuestions()" class="bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-dark">
+                            全部重做
+                        </button>
+                    </div>
+                </div>
+                <div id="wrong-list" class="space-y-4">
+                    <!-- 错题动态生成 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 7. 学习记录 -->
+    <div id="record-page" class="page min-h-screen bg-gray-50">
+        <header class="bg-primary text-white p-4 shadow-md">
+            <div class="max-w-4xl mx-auto flex justify-between items-center">
+                <button onclick="goToPage('home-page')" class="text-white hover:text-blue-200">← 返回</button>
+                <div class="font-bold">学习报告</div>
+                <div></div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-xl shadow text-center">
+                    <div class="text-3xl font-bold text-primary" id="total-questions">0</div>
+                    <div class="text-gray-500 text-sm mt-1">累计做题</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow text-center">
+                    <div class="text-3xl font-bold text-success" id="accuracy-rate">0%</div>
+                    <div class="text-gray-500 text-sm mt-1">正确率</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow text-center">
+                    <div class="text-3xl font-bold text-warning" id="wrong-count">0</div>
+                    <div class="text-gray-500 text-sm mt-1">错题数量</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-6 mb-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">AI学习建议</h3>
+                <div id="study-advice" class="text-gray-700 leading-relaxed whitespace-pre-line">
+                    完成更多题目后，系统将生成个性化学习建议
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">最近练习记录</h3>
+                <div id="record-list" class="space-y-3">
+                    <!-- 记录动态生成 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 8. 家长自主出卷 -->
+    <div id="parent-paper-page" class="page min-h-screen bg-gray-50">
+        <header class="bg-primary text-white p-4 shadow-md">
+            <div class="max-w-4xl mx-auto flex justify-between items-center">
+                <button onclick="goToPage('home-page')" class="text-white hover:text-blue-200">← 返回</button>
+                <div class="font-bold">自主出卷</div>
+                <div></div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto p-6">
+            <div class="bg-white rounded-xl shadow p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-6">自定义试卷参数</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">年级</label>
+                        <select id="paper-grade" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            <option value="3">三年级</option>
+                            <option value="4">四年级</option>
+                            <option value="5">五年级</option>
+                            <option value="6">六年级</option>
+                            <option value="7">七年级</option>
+                            <option value="8">八年级</option>
+                            <option value="9">九年级</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">题目总数</label>
+                        <input type="number" id="paper-count" value="15" min="5" max="50" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-medium mb-2">题型分布</label>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div>
+                            <label class="text-sm text-gray-500">计算题</label>
+                            <input type="number" id="paper-calc" value="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-500">应用题</label>
+                            <input type="number" id="paper-word" value="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-500">选择题</label>
+                            <input type="number" id="paper-choice" value="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-500">填空题</label>
+                            <input type="number" id="paper-fill" value="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg mt-1">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="generateParentPaper()" class="w-full bg-primary text-white py-3 rounded-lg hover:bg-dark transition font-medium">
+                    生成试卷并开始作答
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- 9. 教师登录 -->
+    <div id="teacher-login-page" class="page min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+            <h2 class="text-2xl font-bold text-primary text-center mb-6">教师后台登录</h2>
+            <form onsubmit="handleTeacherLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">教师账号</label>
+                    <input type="text" id="teacher-username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" value="admin" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">密码</label>
+                    <input type="password" id="teacher-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" value="admin123" required>
+                </div>
+                <button type="submit" class="w-full bg-dark text-white py-3 rounded-lg hover:bg-primary transition mb-4">进入后台</button>
+                <div class="text-center text-sm text-gray-600">
+                    <a href="javascript:goToPage('login-page')" class="text-primary hover:underline">返回用户登录</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 10. 教师后台 -->
+    <div id="teacher-admin-page" class="page min-h-screen bg-gray-100">
+        <header class="bg-dark text-white p-4 shadow-md">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="font-bold text-xl">教师管理后台</div>
+                <button onclick="teacherLogout()" class="bg-white/20 px-3 py-1 rounded hover:bg-white/30 text-sm">退出后台</button>
+            </div>
+        </header>
+
+        <div class="max-w-6xl mx-auto flex">
+            <!-- 侧边栏 -->
+            <aside class="w-48 bg-white shadow min-h-screen p-4">
+                <div class="space-y-2">
+                    <button onclick="showAdminTab('user-manage')" class="admin-tab w-full text-left px-4 py-2 rounded hover:bg-blue-50 text-gray-700" data-tab="user-manage">
+                        👥 用户管理
+                    </button>
+                    <button onclick="showAdminTab('invite-manage')" class="admin-tab w-full text-left px-4 py-2 rounded hover:bg-blue-50 text-gray-700" data-tab="invite-manage">
+                        🎫 邀请码管理
+                    </button>
+                    <button onclick="showAdminTab('question-manage')" class="admin-tab w-full text-left px-4 py-2 rounded hover:bg-blue-50 text-gray-700" data-tab="question-manage">
+                        📚 题库管理
+                    </button>
+                    <button onclick="showAdminTab('paper-generate')" class="admin-tab w-full text-left px-4 py-2 rounded hover:bg-blue-50 text-gray-700" data-tab="paper-generate">
+                        📄 智能组卷
+                    </button>
+                </div>
+            </aside>
+
+            <!-- 主内容区 -->
+            <main class="flex-1 p-6">
+                <!-- 用户管理 -->
+                <div id="tab-user-manage" class="admin-content">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">用户管理</h3>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b text-gray-600">
+                                    <th class="text-left py-2">用户名</th>
+                                    <th class="text-left py-2">会员类型</th>
+                                    <th class="text-left py-2">到期时间</th>
+                                    <th class="text-left py-2">状态</th>
+                                    <th class="text-left py-2">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-body">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 邀请码管理 -->
+                <div id="tab-invite-manage" class="admin-content hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">邀请码管理</h3>
+                    <div class="bg-white rounded-lg shadow p-4 mb-4">
+                        <div class="flex gap-4 items-end mb-4 flex-wrap">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">会员类型</label>
+                                <select id="invite-type" class="px-3 py-2 border border-gray-300 rounded">
+                                    <option value="monthly">月会员 (¥39)</option>
+                                    <option value="yearly">年会员 (¥89)</option>
+                                    <option value="permanent">永久会员 (¥169)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">生成数量</label>
+                                <input type="number" id="invite-count" value="1" min="1" max="100" class="px-3 py-2 border border-gray-300 rounded w-24">
+                            </div>
+                            <button onclick="generateInviteCodes()" class="bg-primary text-white px-4 py-2 rounded hover:bg-dark">
+                                批量生成邀请码
+                            </button>
+                            <button onclick="exportInviteCodes()" class="bg-success text-white px-4 py-2 rounded hover:bg-green-600">
+                                导出未使用邀请码
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b text-gray-600">
+                                    <th class="text-left py-2">邀请码</th>
+                                    <th class="text-left py-2">类型</th>
+                                    <th class="text-left py-2">状态</th>
+                                    <th class="text-left py-2">使用用户</th>
+                                    <th class="text-left py-2">生成时间</th>
+                                    <th class="text-left py-2">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invite-table-body">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 题库管理 -->
+                <div id="tab-question-manage" class="admin-content hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">题库管理</h3>
+                    <div class="bg-white rounded-lg shadow p-4 mb-4">
+                        <h4 class="font-medium text-gray-700 mb-3">批量录入题目</h4>
+                        <p class="text-xs text-gray-500 mb-2">格式：题目|||答案|||解析|||题型(calc/word/choice/fill)|||年级|||城市拼音|||来源</p>
+                        <textarea id="batch-questions" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono" placeholder="每行一道题，按格式粘贴"></textarea>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="batchAddQuestions()" class="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-dark">
+                                批量导入题库
+                            </button>
+                            <button onclick="syncCloudQuestions()" class="bg-warning text-white px-4 py-2 rounded text-sm hover:bg-orange-600">
+                                同步云端最新题库
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-medium text-gray-700">题目列表</h4>
+                            <div class="flex gap-2">
+                                <select id="filter-grade" class="px-2 py-1 border border-gray-300 rounded text-sm">
+                                    <option value="">全部年级</option>
+                                    <option value="3">三年级</option>
+                                    <option value="4">四年级</option>
+                                    <option value="5">五年级</option>
+                                    <option value="6">六年级</option>
+                                    <option value="7">七年级</option>
+                                    <option value="8">八年级</option>
+                                    <option value="9">九年级</option>
+                                </select>
+                                <button onclick="filterQuestions()" class="bg-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300">筛选</button>
+                            </div>
+                        </div>
+                        <div id="question-list" class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- 动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 智能组卷 -->
+                <div id="tab-paper-generate" class="admin-content hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">智能组卷</h3>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">年级</label>
+                                <select id="t-paper-grade" class="w-full px-3 py-2 border border-gray-300 rounded">
+                                    <option value="3">三年级</option>
+                                    <option value="4">四年级</option>
+                                    <option value="5">五年级</option>
+                                    <option value="6">六年级</option>
+                                    <option value="7">七年级</option>
+                                    <option value="8">八年级</option>
+                                    <option value="9">九年级</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">题目总数</label>
+                                <input type="number" id="t-paper-count" value="20" class="w-full px-3 py-2 border border-gray-300 rounded">
+                            </div>
+                        </div>
+                        <button onclick="teacherGeneratePaper()" class="w-full bg-primary text-white py-3 rounded hover:bg-dark mb-4">
+                            一键生成试卷
+                        </button>
+                        <div id="paper-preview" class="border-t pt-4 hidden">
+                            <h4 class="font-bold mb-2">试卷预览</h4>
+                            <div id="paper-content" class="text-sm space-y-2 max-h-96 overflow-y-auto p-4 bg-gray-50 rounded">
+                                <!-- 试卷内容 -->
+                            </div>
+                            <button onclick="printPaper()" class="mt-3 bg-gray-700 text-white px-4 py-2 rounded text-sm">
+                                打印/导出试卷
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局配置与常量 ====================
+        const CITIES = {guangzhou:'广州',shenzhen:'深圳',foshan:'佛山',dongguan:'东莞',zhongshan:'中山',zhuhai:'珠海',huizhou:'惠州',jiangmen:'江门',zhaoqing:'肇庆'};
+        const GRADES = {'1':'一年级','2':'二年级','3':'三年级','4':'四年级','5':'五年级','6':'六年级','7':'七年级','8':'八年级','9':'九年级'};
+        const TYPES = {calc:'简便计算',word:'应用题',choice:'选择题',fill:'填空题'};
+        const MEMBER_TYPES = {monthly:'月会员',yearly:'年会员',permanent:'永久会员'};
+        
+        // 题库版本号：内置兜底题库版本，更新内置题目时+1
+        const QUESTION_BANK_VERSION = 2;
+        // 云端题库地址（GitHub部署后自动同目录读取）
+        const CLOUD_QUESTION_URL = './question-bank.json';
+
+        let currentUser = null;
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let currentSelectedOption = null;
+        let practiceMode = 'real';
+
+        // ==================== 工具函数 ====================
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'warning'}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        function generateRandomCode(length) {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < length; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        // ==================== 题库核心逻辑（解决更新不同步问题） ====================
+        // 内置兜底题库（离线/加载失败时使用）
+        function getBuiltinQuestions() {
+            return [
+                {id:1,city:'guangzhou',grade:'5',type:'calc',content:'计算：125×32×25',answer:'100000',analysis:'将32拆成8×4，利用乘法结合律：125×8=1000，4×25=100，1000×100=100000',source:'广州2023五年级期末'},
+                {id:2,city:'guangzhou',grade:'5',type:'calc',content:'计算：999×999+1999',answer:'1000000',analysis:'999×999+999+1000 = 999×(999+1)+1000 = 999000+1000 = 1000000',source:'广州2022五年级期末'},
+                {id:3,city:'shenzhen',grade:'6',type:'word',content:'一件商品先涨价20%，再降价20%，现价是原价的百分之几？',answer:'96%',analysis:'设原价为1，涨价后为1.2，降价后为1.2×0.8=0.96，即96%',source:'深圳2023六年级毕业考'},
+                {id:4,city:'zhongshan',grade:'7',type:'choice',content:'下列数中，是负数的是（ ）',options:['A. -(-3)','B. |-3|','C. (-3)²','D. -3²'],answer:'D',analysis:'-3² = -9，其余结果均为正数',source:'中山2023七年级期中'},
+                {id:5,city:'foshan',grade:'8',type:'fill',content:'因式分解：x² - 9 = ________',answer:'(x+3)(x-3)',analysis:'利用平方差公式：a²-b²=(a+b)(a-b)',source:'佛山2023八年级期末'},
+                {id:6,city:'guangzhou',grade:'6',type:'calc',content:'计算：1/2 + 1/6 + 1/12 + 1/20',answer:'4/5',analysis:'裂项相消：(1-1/2)+(1/2-1/3)+(1/3-1/4)+(1/4-1/5) = 1-1/5 = 4/5',source:'广州2023六年级竞赛'},
+                {id:7,city:'dongguan',grade:'7',type:'choice',content:'方程2x-1=3的解是（ ）',options:['A. x=-1','B. x=1','C. x=2','D. x=-2'],answer:'C',analysis:'2x=4，x=2',source:'东莞2023七年级期末'},
+                {id:8,city:'zhuhai',grade:'9',type:'fill',content:'一元二次方程x²-4x=0的两根为________',answer:'x1=0, x2=4',analysis:'因式分解x(x-4)=0，得x=0或x=4',source:'珠海2023九年级一模'}
+            ];
+        }
+
+        // 初始化题库：优先拉取云端JSON，失败则用内置兜底，自动合并本地自定义题目
+        async function initQuestionBank() {
+            const localVersion = localStorage.getItem('questionBankVersion') || 0;
+            const localQuestions = JSON.parse(localStorage.getItem('questions') || '[]');
+            
+            try {
+                // 尝试拉取云端最新题库
+                const res = await fetch(CLOUD_QUESTION_URL + '?t=' + Date.now()); // 加时间戳防缓存
+                if (res.ok) {
+                    const cloudQuestions = await res.json();
+                    // 合并：云端题目优先，本地自定义题目保留（id不冲突的）
+                    const mergedMap = new Map();
+                    cloudQuestions.forEach(q => mergedMap.set(q.id, q));
+                    localQuestions.forEach(q => {
+                        // 只保留本地新增的、云端没有的自定义题目
+                        if (!mergedMap.has(q.id) && String(q.id).startsWith('local_')) {
+                            mergedMap.set(q.id, q);
+                        }
+                    });
+                    
+                    localStorage.setItem('questions', JSON.stringify(Array.from(mergedMap.values())));
+                    localStorage.setItem('questionBankVersion', QUESTION_BANK_VERSION);
+                    return;
+                }
+            } catch (e) {
+                console.log('云端题库拉取失败，使用本地版本');
+            }
+
+            // 云端拉取失败：检查内置题库版本
+            if (!localStorage.getItem('questions')) {
+                // 首次访问：写入内置题库
+                localStorage.setItem('questions', JSON.stringify(getBuiltinQuestions()));
+                localStorage.setItem('questionBankVersion', QUESTION_BANK_VERSION);
+            } else if (parseInt(localVersion) < QUESTION_BANK_VERSION) {
+                // 内置题库更新：合并升级
+                const builtin = getBuiltinQuestions();
+                const mergedMap = new Map();
+                localQuestions.forEach(q => mergedMap.set(q.id, q));
+                builtin.forEach(q => mergedMap.set(q.id, q)); // 内置题目覆盖旧版本
+                
+                localStorage.setItem('questions', JSON.stringify(Array.from(mergedMap.values())));
+                localStorage.setItem('questionBankVersion', QUESTION_BANK_VERSION);
+            }
+        }
+
+        // 手动同步云端题库
+        async function syncCloudQuestions() {
+            showToast('正在同步云端题库...', 'warning');
+            try {
+                const res = await fetch(CLOUD_QUESTION_URL + '?t=' + Date.now());
+                if (!res.ok) throw new Error('拉取失败');
+                
+                const cloudQuestions = await res.json();
+                const localQuestions = JSON.parse(localStorage.getItem('questions') || '[]');
+                
+                const mergedMap = new Map();
+                cloudQuestions.forEach(q => mergedMap.set(q.id, q));
+                localQuestions.forEach(q => {
+                    if (!mergedMap.has(q.id) && String(q.id).startsWith('local_')) {
+                        mergedMap.set(q.id, q);
+                    }
+                });
+                
+                localStorage.setItem('questions', JSON.stringify(Array.from(mergedMap.values())));
+                showToast(`同步成功，共 ${cloudQuestions.length} 道云端真题`);
+                loadQuestionManage();
+            } catch (e) {
+                showToast('同步失败，请检查网络', 'error');
+            }
+        }
+
+        // 初始化默认教师账号
+        function initTeacher() {
+            if (!localStorage.getItem('teacher')) {
+                localStorage.setItem('teacher', JSON.stringify({username:'admin', password:'admin123'}));
+            }
+        }
+
+        // ==================== 页面切换 ====================
+        function goToPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        function skipWelcome() {
+            checkLoginStatus();
+        }
+
+        // 欢迎动画 + 系统初始化
+        window.onload = async function() {
+            // 先加载动画
+            setTimeout(() => {
+                document.getElementById('loading-bar').style.width = '100%';
+            }, 100);
+
+            // 后台异步初始化题库
+            await initQuestionBank();
+            initTeacher();
+
+            // 隐藏加载遮罩
+            document.getElementById('global-loading').style.display = 'none';
+
+            // 3秒动画结束后检查登录状态
+            setTimeout(() => {
+                checkLoginStatus();
+            }, 3000);
+        };
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const saved = localStorage.getItem('currentUser');
+            if (saved) {
+                const user = JSON.parse(saved);
+                if (checkMemberValid(user)) {
+                    currentUser = user;
+                    updateUserInfo();
+                    checkExpireWarning();
+                    goToPage('home-page');
+                    return;
+                } else {
+                    localStorage.removeItem('currentUser');
+                    showToast('会员已过期，请重新登录', 'error');
+                }
+            }
+            goToPage('login-page');
+        }
+
+        // ==================== 用户登录注册 ====================
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (!user) {
+                showToast('用户名或密码错误', 'error');
+                return;
+            }
+            
+            if (!checkMemberValid(user)) {
+                showToast('会员已过期，请续费后登录', 'error');
+                return;
+            }
+            
+            currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            updateUserInfo();
+            checkExpireWarning();
+            goToPage('home-page');
+            showToast('登录成功');
+        }
+
+        function checkMemberValid(user) {
+            if (user.memberType === 'permanent') return true;
+            return new Date(user.expireTime) > new Date();
+        }
+
+        function checkExpireWarning() {
+            if (!currentUser || currentUser.memberType === 'permanent') {
+                document.getElementById('expire-tip').classList.add('hidden');
+                return;
+            }
+            const expireDate = new Date(currentUser.expireTime);
+            const daysLeft = Math.ceil((expireDate - new Date()) / (1000*60*60*24));
+            if (daysLeft <= 7 && daysLeft > 0) {
+                document.getElementById('expire-tip').classList.remove('hidden');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const inviteCode = document.getElementById('reg-invite').value.trim().toUpperCase();
+            
+            if (username.length < 2) {
+                showToast('用户名至少2位', 'error');
+                return;
+            }
+            if (password.length < 4) {
+                showToast('密码至少4位', 'error');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.find(u => u.username === username)) {
+                showToast('用户名已存在', 'error');
+                return;
+            }
+            
+            // 验证邀请码
+            const codes = JSON.parse(localStorage.getItem('inviteCodes') || '[]');
+            const codeObj = codes.find(c => c.code === inviteCode && c.status === 'unused');
+            
+            if (!codeObj) {
+                showToast('邀请码无效或已被使用', 'error');
+                return;
+            }
+            
+            // 计算到期时间
+            let expireTime;
+            const now = new Date();
+            if (codeObj.type === 'monthly') {
+                expireTime = new Date(now.setMonth(now.getMonth() + 1)).toISOString();
+            } else if (codeObj.type === 'yearly') {
+                expireTime = new Date(now.setFullYear(now.getFullYear() + 1)).toISOString();
+            } else {
+                expireTime = 'permanent';
+            }
+            
+            // 创建用户
+            const newUser = {
+                username,
+                password,
+                memberType: codeObj.type,
+                inviteCode,
+                expireTime,
+                createTime: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // 更新邀请码状态
+            codeObj.status = 'used';
+            codeObj.usedBy = username;
+            codeObj.usedTime = new Date().toISOString();
+            localStorage.setItem('inviteCodes', JSON.stringify(codes));
+            
+            showToast('注册成功，请登录');
+            setTimeout(() => goToPage('login-page'), 1000);
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            goToPage('login-page');
+            showToast('已退出登录');
+        }
+
+        function updateUserInfo() {
+            if (!currentUser) return;
+            let expireText = '';
+            if (currentUser.memberType === 'permanent') {
+                expireText = '永久有效';
+            } else {
+                expireText = '有效期至：' + new Date(currentUser.expireTime).toLocaleDateString();
+            }
+            document.getElementById('user-info').textContent = 
+                `${currentUser.username} (${MEMBER_TYPES[currentUser.memberType]}) · ${expireText}`;
+        }
+
+        // ==================== 刷题核心功能 ====================
+        function showPracticePanel() {
+            document.getElementById('practice-panel').classList.toggle('hidden');
+        }
+
+        function startPractice(mode) {
+            practiceMode = mode;
+            const city = document.getElementById('select-city').value;
+            const grade = document.getElementById('select-grade').value;
+            const type = document.getElementById('select-type').value;
+            
+            currentQuestions = [];
+            
+            if (mode === 'real') {
+                // 真题模式：优先匹配城市+年级+题型
+                const allQuestions = JSON.parse(localStorage.getItem('questions') || '[]');
+                // 先匹配同城市的
+                let matched = allQuestions.filter(q => q.grade === grade && q.type === type && q.city === city);
+                // 不够就补其他城市同年级
+                if (matched.length < 5) {
+                    const otherCity = allQuestions.filter(q => q.grade === grade && q.type === type && q.city !== city);
+                    matched = matched.concat(otherCity);
+                }
+                currentQuestions = matched;
+                
+                if (currentQuestions.length === 0) {
+                    showToast('该条件下暂无真题，将使用AI出题模式', 'warning');
+                    generateAIQuestions(grade, type, 10);
+                } else if (currentQuestions.length < 10) {
+                    generateAIQuestions(grade, type, 10 - currentQuestions.length);
+                }
+            } else {
+                // AI出题模式
+                generateAIQuestions(grade, type, 10);
+            }
+            
+            // 打乱顺序
+            currentQuestions.sort(() => Math.random() - 0.5);
+            currentQuestionIndex = 0;
+            renderQuestion();
+            goToPage('practice-page');
+        }
+
+        // AI智能出题（分学段难度）
+        function generateAIQuestions(grade, type, count) {
+            const gradeNum = parseInt(grade);
+            const isPrimary = gradeNum <= 6;
+            const isJunior = gradeNum >= 7;
+            
+            for (let i = 0; i < count; i++) {
+                let q = {};
+                q.id = 'ai_' + Date.now() + '_' + i;
+                q.type = type;
+                q.grade = grade;
+                q.source = 'AI智能生成';
+                
+                if (type === 'calc') {
+                    if (isPrimary) {
+                        // 小学简便计算
+                        const patterns = [
+                            () => {
+                                const a = Math.floor(Math.random()*90+10);
+                                return {content:`计算：${a}×99 + ${a}`, answer: `${a*100}`, analysis:`乘法分配律：${a}×(99+1)=${a}×100=${a*100}`};
+                            },
+                            () => {
+                                const a = Math.floor(Math.random()*80+20);
+                                return {content:`计算：${a}×101 - ${a}`, answer: `${a*100}`, analysis:`乘法分配律：${a}×(101-1)=${a}×100=${a*100}`};
+                            },
+                            () => {
+                                const a = Math.floor(Math.random()*50+10);
+                                const b = Math.floor(Math.random()*10+2);
+                                return {content:`计算：${a}×${b}×5`, answer: `${a*b*5}`, analysis:`乘法结合律：先算${b}×5=${b*5}，再算${a}×${b*5}=${a*b*5}`};
+                            },
+                            () => {
+                                const a = Math.floor(Math.random()*200+100);
+                                const b = Math.floor(Math.random()*90+10);
+                                return {content:`计算：${a} - ${b} - ${Math.floor(b/2)}`, answer: `${a - b - Math.floor(b/2)}`, analysis:`减法性质：连续减去两个数等于减去它们的和`};
+                            }
+                        ];
+                        const p = patterns[Math.floor(Math.random()*patterns.length)];
+                        const res = p();
+                        q.content = res.content;
+                        q.answer = res.answer;
+                        q.analysis = res.analysis;
+                    } else {
+                        // 初中计算
+                        const patterns = [
+                            () => ({content:'计算：(x+2)(x-2) + 4', answer:'x²', analysis:'平方差公式展开：x²-4+4 = x²'}),
+                            () => ({content:'因式分解：x² + 6x + 9', answer:'(x+3)²', analysis:'完全平方公式：a²+2ab+b²=(a+b)²'}),
+                            () => ({content:'计算：2⁰ + 2⁻¹', answer:'1.5', analysis:'任何非零数的0次方为1，负指数为倒数：1 + 1/2 = 1.5'})
+                        ];
+                        const p = patterns[Math.floor(Math.random()*patterns.length)];
+                        const res = p();
+                        q.content = res.content;
+                        q.answer = res.answer;
+                        q.analysis = res.analysis;
+                    }
+                } else if (type === 'word') {
+                    if (isPrimary) {
+                        const num = Math.floor(Math.random()*20+10);
+                        const price = Math.floor(Math.random()*20+5);
+                        const scenarios = [
+                            {
+                                content:`商店运来${num}筐苹果，每筐重25千克，卖出一部分后还剩120千克，卖出了多少千克？`,
+                                answer: `${num*25 - 120}千克`,
+                                analysis: `总重量：${num}×25=${num*25}千克，卖出：${num*25}-120=${num*25-120}千克`
+                            },
+                            {
+                                content:`一本书有${num*8}页，小明每天看${num}页，看了5天后还剩多少页？`,
+                                answer: `${num*8 - num*5}页`,
+                                analysis: `已看：${num}×5=${num*5}页，剩余：${num*8}-${num*5}=${num*3}页`
+                            },
+                            {
+                                content:`一件上衣${price*3}元，一条裤子${price*2}元，买4套一共需要多少钱？`,
+                                answer: `${(price*3 + price*2)*4}元`,
+                                analysis: `一套价格：${price*3}+${price*2}=${price*5}元，4套：${price*5}×4=${(price*5)*4}元`
+                            }
+                        ];
+                        const s = scenarios[Math.floor(Math.random()*scenarios.length)];
+                        q.content = s.content;
+                        q.answer = s.answer;
+                        q.analysis = s.analysis;
+                    } else {
+                        q.content = '甲乙两地相距360km，一辆汽车从甲地开往乙地，2小时行了全程的40%，照这样速度，行完全程需要多少小时？';
+                        q.answer = '5小时';
+                        q.analysis = '速度：360×40%÷2=72km/h，总时间：360÷72=5小时；或直接 2÷40%=5小时';
+                    }
+                } else if (type === 'choice') {
+                    if (isPrimary) {
+                        q.content = '下面算式中，运用了乘法分配律的是（ ）';
+                        q.options = ['A. 42×(18+12)=42×30', 'B. a×b + a×c = a×(b+c)', 'C. 4×a×5 = a×(4×5)', 'D. a + b + c = a + (b+c)'];
+                        q.answer = 'B';
+                        q.analysis = '乘法分配律：两个数的和与一个数相乘，可以分别相乘再相加';
+                    } else {
+                        q.content = '下列计算正确的是（ ）';
+                        q.options = ['A. a²+a³=a⁵', 'B. a²·a³=a⁶', 'C. (a²)³=a⁶', 'D. a¹⁰÷a²=a⁵'];
+                        q.answer = 'C';
+                        q.analysis = '幂的乘方，底数不变指数相乘：(a²)³=a^(2×3)=a⁶';
+                    }
+                } else if (type === 'fill') {
+                    if (isPrimary) {
+                        const num = Math.floor(Math.random()*20+10);
+                        q.content = `一个三角形的底是${num}厘米，高是8厘米，面积是____平方厘米`;
+                        q.answer = `${num*4}`;
+                        q.analysis = `三角形面积=底×高÷2 = ${num}×8÷2 = ${num*4}平方厘米`;
+                    } else {
+                        q.content = '已知x+2y=3，则2x+4y=______';
+                        q.answer = '6';
+                        q.analysis = '整体代入：2(x+2y)=2×3=6';
+                    }
+                }
+                
+                currentQuestions.push(q);
+            }
+        }
+
+        function renderQuestion() {
+            const q = currentQuestions[currentQuestionIndex];
+            document.getElementById('question-progress').textContent = `${currentQuestionIndex + 1} / ${currentQuestions.length}`;
+            document.getElementById('question-type-tag').textContent = TYPES[q.type];
+            document.getElementById('question-source').textContent = '来源：' + q.source;
+            document.getElementById('question-content').textContent = q.content;
+            
+            // 重置界面
+            document.getElementById('analysis-panel').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('submit-btn').classList.remove('hidden');
+            document.getElementById('user-answer').value = '';
+            currentSelectedOption = null;
+            
+            // 分数提示检测
+            const hasFraction = q.content.includes('/') || q.content.includes('分之') || q.content.includes('分数') || q.answer.includes('/');
+            document.getElementById('fraction-tip').classList.toggle('hidden', !hasFraction);
+            
+            // 选择题/其他题型切换
+            if (q.type === 'choice') {
+                document.getElementById('choice-options').classList.remove('hidden');
+                document.getElementById('answer-input-area').classList.add('hidden');
+                const btns = document.querySelectorAll('#choice-options button');
+                q.options.forEach((opt, idx) => {
+                    btns[idx].textContent = opt;
+                    btns[idx].classList.remove('bg-blue-100', 'border-primary');
+                });
+            } else {
+                document.getElementById('choice-options').classList.add('hidden');
+                document.getElementById('answer-input-area').classList.remove('hidden');
+            }
+        }
+
+        function selectOption(btn, option) {
+            document.querySelectorAll('#choice-options button').forEach(b => {
+                b.classList.remove('bg-blue-100', 'border-primary');
+            });
+            btn.classList.add('bg-blue-100', 'border-primary');
+            currentSelectedOption = option;
+        }
+
+        function submitAnswer() {
+            const q = currentQuestions[currentQuestionIndex];
+            let userAnswer;
+            
+            if (q.type === 'choice') {
+                if (!currentSelectedOption) {
+                    showToast('请选择答案', 'warning');
+                    return;
+                }
+                userAnswer = currentSelectedOption;
+            } else {
+                userAnswer = document.getElementById('user-answer').value.trim();
+                if (!userAnswer) {
+                    showToast('请输入答案', 'warning');
+                    return;
+                }
+            }
+            
+            // 宽松比对：去空格、统一大小写
+            const normalize = (s) => String(s).toLowerCase().replace(/\s/g, '').replace(/，/g, ',').replace(/。/g, '');
+            const isCorrect = normalize(userAnswer) === normalize(q.answer);
+            
+            // 显示解析
+            const panel = document.getElementById('analysis-panel');
+            panel.classList.remove('hidden');
+            panel.className = `border rounded-xl p-6 ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
+            
+            document.getElementById('result-text').textContent = isCorrect ? '回答正确 ✓' : '回答错误 ✗';
+            document.getElementById('result-text').className = `font-bold mb-2 ${isCorrect ? 'text-success' : 'text-danger'}`;
+            document.getElementById('correct-answer').textContent = q.answer;
+            document.getElementById('answer-analysis').textContent = q.analysis;
+            
+            document.getElementById('next-btn').classList.remove('hidden');
+            document.getElementById('submit-btn').classList.add('hidden');
+            
+            // 记录答题数据
+            recordAnswer(q, isCorrect, userAnswer);
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                showToast('本次练习已完成！');
+                setTimeout(() => {
+                    goToPage('record-page');
+                    loadStudyRecord();
+                }, 1000);
+            }
+        }
+
+        function confirmQuitPractice() {
+            if (confirm('确定退出练习？当前进度将不会保存')) {
+                goToPage('home-page');
+            }
+        }
+
+        // 记录答题
+        function recordAnswer(question, isCorrect, userAnswer) {
+            if (!currentUser) return;
+            const username = currentUser.username;
+            
+            // 错题本
+            if (!isCorrect) {
+                const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
+                if (!wrongBook.find(w => w.questionId === question.id)) {
+                    wrongBook.unshift({
+                        questionId: question.id,
+                        question: question,
+                        wrongAnswer: userAnswer,
+                        wrongTime: new Date().toISOString(),
+                        mastered: false
+                    });
+                    localStorage.setItem('wrongBook_' + username, JSON.stringify(wrongBook));
+                }
+            } else {
+                // 答对了标记为已掌握
+                const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
+                const idx = wrongBook.findIndex(w => w.questionId === question.id);
+                if (idx !== -1) {
+                    wrongBook[idx].mastered = true;
+                    localStorage.setItem('wrongBook_' + username, JSON.stringify(wrongBook));
+                }
+            }
+            
+            // 学习记录
+            const records = JSON.parse(localStorage.getItem('records_' + username) || '[]');
+            records.unshift({
+                time: new Date().toISOString(),
+                questionId: question.id,
+                type: question.type,
+                correct: isCorrect
+            });
+            // 只保留最近500条
+            if (records.length > 500) records.length = 500;
+            localStorage.setItem('records_' + username, JSON.stringify(records));
+        }
+
+        // ==================== 错题本 ====================
+        function loadWrongBook() {
+            if (!currentUser) return;
+            const username = currentUser.username;
+            const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
+            const container = document.getElementById('wrong-list');
+            
+            if (wrongBook.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">暂无错题，继续加油！</div>';
+                return;
+            }
+            
+            container.innerHTML = wrongBook.map((item, idx) => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition ${item.mastered ? 'opacity-60' : ''}">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="text-sm text-gray-500 mb-1">
+                                ${TYPES[item.question.type]} · ${item.question.source}
+                                ${item.mastered ? '<span class="text-success ml-2">✓ 已掌握</span>' : ''}
+                            </div>
+                            <div class="text-gray-800">${item.question.content}</div>
+                            <div class="text-sm text-danger mt-2">你的答案：${item.wrongAnswer}</div>
+                            <div class="text-sm text-success">正确答案：${item.question.answer}</div>
+                        </div>
+                        <div class="flex flex-col gap-1 ml-4">
+                            <button onclick="redoSingleWrong(${idx})" class="text-primary text-sm hover:underline">重做</button>
+                            <button onclick="removeWrong(${idx})" class="text-gray-400 text-sm hover:underline">移除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function redoWrongQuestions() {
+            if (!currentUser) return;
+            const username = currentUser.username;
+            const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
+            const unmastered = wrongBook.filter(w => !w.mastered);
+            
+            if (unmastered.length === 0) {
+                showToast('暂无未掌握的错题', 'warning');
+                return;
+            }
+            currentQuestions = unmastered.map(w => w.question);
+            currentQuestionIndex = 0;
+            renderQuestion();
+            goToPage('practice-page');
+        }
+
+        function redoSingleWrong(idx) {
+            if (!currentUser) return;
+            const username = currentUser.username;
+            const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
+            currentQuestions = [wrongBook[idx].question];
+            currentQuestionIndex = 0;
+            renderQuestion();
+            goToPage('practice-page');
+        }
+
+        function removeWrong(idx) {
+            if (!confirm('确定移除此错题？')) return;
+            const username = currentUser.username;
+            const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
+            wrongBook.splice(idx, 1);
+            localStorage.setItem('wrongBook_' + username, JSON.stringify(wrongBook));
+            loadWrongBook();
+        }
+
+        function clearFinishedWrong() {
+            if (!confirm('确定清除所有已掌握的错题？')) return;
+            const username = currentUser.username;
+            const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
+            const filtered = wrongBook.filter(w => !w.mastered);
+            localStorage.setItem('wrongBook_' + username, JSON.stringify(filtered));
+            loadWrongBook();
+            showToast('已清除已掌握错题');
+        }
+
+        // ==================== 学习报告 ====================
+        function loadStudyRecord() {
+            if (!currentUser) return;
+            const username = currentUser.username;
+            const records = JSON.parse(localStorage.getItem('records_' + username) || '[]');
+            const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
+            
+            const total = records.length;
+            const correct = records.filter(r => r.correct).length;
+            const accuracy = total > 0 ? Math.round(correct / total * 100) + '%' : '0%';
+            
+            document.getElementById('total-questions').textContent = total;
+            document.getElementById('accuracy-rate').textContent = accuracy;
+            document.getElementById('wrong-count').textContent = wrongBook.filter(w => !w.mastered).length;
+            
+            // 生成建议
+            const adviceEl = document.getElementById('study-advice');
+            if (total < 10) {
+                adviceEl.textContent = '目前练习量较少，建议每天坚持10-15道题，积累足够数据后系统将给出更精准的个性化建议。';
+            } else {
+                const accNum = parseInt(accuracy);
+                let advice = '';
+                if (accNum >= 90) {
+                    advice = '👏 正确率优秀！建议适当提升题目难度，挑战拓展题型，保持做题手感，每周进行1-2次模拟卷测试。';
+                } else if (accNum >= 70) {
+                    advice = '📈 基础掌握良好，重点关注错题本中的薄弱知识点，针对性练习同类题型，确保同类题不再出错。';
+                } else {
+                    advice = '💪 基础需要加强，建议从课本例题入手，先保证基础题正确率，再逐步提升难度，不要急于求成。';
+                }
+                
+                // 统计薄弱题型
+                const typeStats = {};
+                records.forEach(r => {
+                    if (!typeStats[r.type]) typeStats[r.type] = {total:0, wrong:0};
+                    typeStats[r.type].total++;
+                    if (!r.correct) typeStats[r.type].wrong++;
+                });
+                let weakType = null;
+                let maxWrongRate = 0;
+                for (let t in typeStats) {
+                    if (typeStats[t].total >= 3) {
+                        const rate = typeStats[t].wrong / typeStats[t].total;
+                        if (rate > maxWrongRate) {
+                            maxWrongRate = rate;
+                            weakType = t;
+                        }
+                    }
+                }
+                if (weakType && maxWrongRate > 0.3) {
+                    advice += `\n\n📌 薄弱题型：${TYPES[weakType]}，建议增加该题型的专项练习，每天集中练5-8道。`;
+                }
+                adviceEl.textContent = advice;
+            }
+            
+            // 记录列表
+            const recordList = document.getElementById('record-list');
+            const recent = records.slice(0, 10);
+            recordList.innerHTML = recent.map(r => `
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <div>
+                        <span class="text-sm text-gray-600">${TYPES[r.type]}</span>
+                        <span class="text-sm text-gray-400 ml-2">${new Date(r.time).toLocaleString()}</span>
+                    </div>
+                    <span class="${r.correct ? 'text-success' : 'text-danger'} text-sm">
+                        ${r.correct ? '正确' : '错误'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // ==================== 家长自主出卷 ====================
+        function generateParentPaper() {
+            const grade = document.getElementById('paper-grade').value;
+            const calcCount = parseInt(document.getElementById('paper-calc').value) || 0;
+            const wordCount = parseInt(document.getElementById('paper-word').value) || 0;
+            const choiceCount = parseInt(document.getElementById('paper-choice').value) || 0;
+            const fillCount = parseInt(document.getElementById('paper-fill').value) || 0;
+            
+            const total = calcCount + wordCount + choiceCount + fillCount;
+            if (total === 0) {
+                showToast('请至少设置一种题型', 'warning');
+                return;
+            }
+            
+            currentQuestions = [];
+            
+            // 先从真题库取，不够用AI补
+            const allQuestions = JSON.parse(localStorage.getItem('questions') || '[]');
+            
+            const addQuestions = (type, count) => {
+                if (count <= 0) return;
+                const matched = allQuestions.filter(q => q.grade === grade && q.type === type);
+                const selected = matched.sort(() => Math.random() - 0.5).slice(0, count);
+                currentQuestions = currentQuestions.concat(selected);
+                if (selected.length < count) {
+                    generateAIQuestions(grade, type, count - selected.length);
+                }
+            };
+            
+            addQuestions('calc', calcCount);
+            addQuestions('word', wordCount);
+            addQuestions('choice', choiceCount);
+            addQuestions('fill', fillCount);
+            
+            currentQuestions.sort(() => Math.random() - 0.5);
+            currentQuestionIndex = 0;
+            renderQuestion();
+            goToPage('practice-page');
+            showToast(`试卷生成成功，共 ${currentQuestions.length} 道题`);
+        }
+
+        // ==================== 教师后台 ====================
+        function handleTeacherLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('teacher-username').value.trim();
+            const password = document.getElementById('teacher-password').value;
+            
+            const teacher = JSON.parse(localStorage.getItem('teacher'));
+            if (username === teacher.username && password === teacher.password) {
+                goToPage('teacher-admin-page');
+                showAdminTab('user-manage');
+                showToast('登录成功');
+            } else {
+                showToast('账号或密码错误', 'error');
+            }
+        }
+
+        function teacherLogout() {
+            goToPage('login-page');
+            showToast('已退出后台');
+        }
+
+        function showAdminTab(tabName) {
+            document.querySelectorAll('.admin-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('bg-blue-100', 'text-primary'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('bg-blue-100', 'text-primary');
+            
+            // 加载对应数据
+            if (tabName === 'user-manage') loadUserManage();
+            if (tabName === 'invite-manage') loadInviteManage();
+            if (tabName === 'question-manage') loadQuestionManage();
+        }
+
+        // 用户管理
+        function loadUserManage() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const tbody = document.getElementById('user-table-body');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-400">暂无注册用户</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = users.map(u => {
+                const valid = checkMemberValid(u);
+                let expireText = u.memberType === 'permanent' ? '永久' : new Date(u.expireTime).toLocaleDateString();
+                return `
+                    <tr class="border-b">
+                        <td class="py-2">${u.username}</td>
+                        <td class="py-2">${MEMBER_TYPES[u.memberType]}</td>
+                        <td class="py-2">${expireText}</td>
+                        <td class="py-2">
+                            <span class="${valid ? 'text-success' : 'text-danger'}">${valid ? '正常' : '已过期'}</span>
+                        </td>
+                        <td class="py-2">
+                            <button onclick="extendMember('${u.username}')" class="text-primary text-sm hover:underline">续费</button>
+                            <button onclick="deleteUser('${u.username}')" class="text-danger text-sm hover:underline ml-2">删除</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function extendMember(username) {
+            const type = prompt('请输入续费类型：monthly(月)/yearly(年)/permanent(永久)');
+            if (!['monthly','yearly','permanent'].includes(type)) {
+                showToast('类型无效', 'error');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.username === username);
+            if (!user) return;
+            
+            const now = new Date();
+            let baseTime = new Date(user.expireTime) > now ? new Date(user.expireTime) : now;
+            
+            if (type === 'monthly') {
+                user.expireTime = new Date(baseTime.setMonth(baseTime.getMonth() + 1)).toISOString();
+            } else if (type === 'yearly') {
+                user.expireTime = new Date(baseTime.setFullYear(baseTime.getFullYear() + 1)).toISOString();
+            } else {
+                user.memberType = 'permanent';
+                user.expireTime = 'permanent';
+            }
+            
+            if (type !== 'permanent') user.memberType = type;
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            showToast('续费成功');
+            loadUserManage();
+        }
+
+        function deleteUser(username) {
+            if (!confirm(`确定删除用户 ${username}？该操作不可恢复`)) return;
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+            users = users.filter(u => u.username !== username);
+            localStorage.setItem('users', JSON.stringify(users));
+            loadUserManage();
+            showToast('用户已删除');
+        }
+
+        // 邀请码管理
+        function generateInviteCodes() {
+            const type = document.getElementById('invite-type').value;
+            const count = parseInt(document.getElementById('invite-count').value);
+            
+            if (count < 1 || count > 100) {
+                showToast('数量范围1-100', 'error');
+                return;
+            }
+            
+            const codes = JSON.parse(localStorage.getItem('inviteCodes') || '[]');
+            
+            for (let i = 0; i < count; i++) {
+                const code = generateRandomCode(8);
+                codes.unshift({
+                    code,
+                    type,
+                    status: 'unused',
+                    createTime: new Date().toISOString(),
+                    usedBy: null,
+                    usedTime: null
+                });
+            }
+            
+            localStorage.setItem('inviteCodes', JSON.stringify(codes));
+            loadInviteManage();
+            showToast(`成功生成 ${count} 个${MEMBER_TYPES[type]}邀请码`);
+        }
+
+        function exportInviteCodes() {
+            const codes = JSON.parse(localStorage.getItem('inviteCodes') || '[]');
+            const unused = codes.filter(c => c.status === 'unused');
+            
+            if (unused.length === 0) {
+                showToast('暂无未使用的邀请码', 'warning');
+                return;
+            }
+            
+            const text = unused.map(c => `${c.code}\t${MEMBER_TYPES[c.type]}`).join('\n');
+            const blob = new Blob([text], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '邀请码列表.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('导出成功');
+        }
+
+        function loadInviteManage() {
+            const codes = JSON.parse(localStorage.getItem('inviteCodes') || '[]');
+            const tbody = document.getElementById('invite-table-body');
+            
+            if (codes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-gray-400">暂无邀请码</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = codes.slice(0, 50).map(c => `
+                <tr class="border-b">
+                    <td class="py-2 font-mono text-primary">${c.code}</td>
+                    <td class="py-2">${MEMBER_TYPES[c.type]}</td>
+                    <td class="py-2">
+                        <span class="${c.status === 'unused' ? 'text-success' : 'text-gray-400'}">
+                            ${c.status === 'unused' ? '未使用' : '已使用'}
+                        </span>
+                    </td>
+                    <td class="py-2">${c.usedBy || '-'}</td>
+                    <td class="py-2 text-gray-400 text-xs">${new Date(c.createTime).toLocaleDateString()}</td>
+                    <td class="py-2">
+                        <button onclick="copyCode('${c.code}')" class="text-primary text-xs hover:underline">复制</button>
+                        <button onclick="deleteInvite('${c.code}')" class="text-danger text-xs hover:underline ml-2">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('已复制到剪贴板');
+            });
+        }
+
+        function deleteInvite(code) {
+            if (!confirm('确定删除该邀请码？')) return;
+            let codes = JSON.parse(localStorage.getItem('inviteCodes') || '[]');
+            codes = codes.filter(c => c.code !== code);
+            localStorage.setItem('inviteCodes', JSON.stringify(codes));
+            loadInviteManage();
+        }
+
+        // 题库管理
+        function loadQuestionManage() {
+            const questions = JSON.parse(localStorage.getItem('questions') || '[]');
+            const container = document.getElementById('question-list');
+            
+            if (questions.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-4">暂无题目</div>';
+                return;
+            }
+            
+            container.innerHTML = questions.map((q, idx) => `
+                <div class="border border-gray-200 rounded p-3 text-sm">
+                    <div class="flex justify-between">
+                        <div class="flex-1">
+                            <div class="text-gray-500 text-xs mb-1">
+                                ${CITIES[q.city] || '通用'} · ${GRADES[q.grade] || ''} · ${TYPES[q.type]} · ${q.source || '自定义'}
+                            </div>
+                            <div class="text-gray-800">${q.content}</div>
+                            <div class="text-success text-xs mt-1">答案：${q.answer}</div>
+                        </div>
+                        <div class="flex flex-col gap-1 ml-3">
+                            <button onclick="editQuestion(${idx})" class="text-primary text-xs hover:underline">编辑</button>
+                            <button onclick="deleteQuestion(${idx})" class="text-danger text-xs hover:underline">删除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function batchAddQuestions() {
+            const text = document.getElementById('batch-questions').value.trim();
+            if (!text) {
+                showToast('请输入题目内容', 'warning');
+                return;
+            }
+            
+            const lines = text.split('\n').filter(l => l.trim());
+            const questions = JSON.parse(localStorage.getItem('questions') || '[]');
+            let success = 0;
+            
+            lines.forEach(line => {
+                const parts = line.split('|||');
+                if (parts.length >= 7) {
+                    questions.push({
+                        id: 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+                        content: parts[0].trim(),
+                        answer: parts[1].trim(),
+                        analysis: parts[2].trim(),
+                        type: parts[3].trim(),
+                        grade: parts[4].trim(),
+                        city: parts[5].trim(),
+                        source: parts[6].trim()
+                    });
+                    success++;
+                }
+            });
+            
+            localStorage.setItem('questions', JSON.stringify(questions));
+            document.getElementById('batch-questions').value = '';
+            loadQuestionManage();
+            showToast(`成功导入 ${success} 道题目`);
+        }
+
+        function deleteQuestion(idx) {
+            if (!confirm('确定删除该题目？')) return;
+            const questions = JSON.parse(localStorage.getItem('questions') || '[]');
+            questions.splice(idx, 1);
+            localStorage.setItem('questions', JSON.stringify(questions));
+            loadQuestionManage();
+        }
+
+        function editQuestion(idx) {
+            const questions = JSON.parse(localStorage.getItem('questions') || '[]');
+            const q = questions[idx];
+            const newContent = prompt('编辑题目内容：', q.content);
+            if (newContent === null) return;
+            q.content = newContent;
+            localStorage.setItem('questions', JSON.stringify(questions));
+            loadQuestionManage();
+            showToast('修改成功');
+        }
+
+        function filterQuestions() {
+            const grade = document.getElementById('filter-grade').value;
+            const questions = JSON.parse(localStorage.getItem('questions') || '[]');
+            const filtered = grade ? questions.filter(q => q.grade === grade) : questions;
+            
+            const container = document.getElementById('question-list');
+            container.innerHTML = filtered.map((q, idx) => `
+                <div class="border border-gray-200 rounded p-3 text-sm">
+                    <div class="flex justify-between">
+                        <div class="flex-1">
+                            <div class="text-gray-500 text-xs mb-1">
+                                ${CITIES[q.city] || '通用'} · ${GRADES[q.grade] || ''} · ${TYPES[q.type]} · ${q.source || '自定义'}
+                            </div>
+                            <div class="text-gray-800">${q.content}</div>
+                            <div class="text-success text-xs mt-1">答案：${q.answer}</div>
+                        </div>
+                        <div class="flex flex-col gap-1 ml-3">
+                            <button onclick="editQuestion(${idx})" class="text-primary text-xs hover:underline">编辑</button>
+                            <button onclick="deleteQuestion(${idx})" class="text-danger text-xs hover:underline">删除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 教师智能组卷
+        function teacherGeneratePaper() {
+            const grade = document.getElementById('t-paper-grade').value;
+            const count = parseInt(document.getElementById('t-paper-count').value);
+            
+            const questions = JSON.parse(localStorage.getItem('questions') || '[]');
+            let paperQuestions = questions.filter(q => q.grade === grade);
+            
+            if (paperQuestions.length < count) {
+                // 不够用AI补
+                const need = count - paperQuestions.length;
+                generateAIQuestions(grade, 'calc', Math.ceil(need/2));
+                generateAIQuestions(grade, 'word', Math.floor(need/2));
+                paperQuestions = currentQuestions.slice(0, count);
+            } else {
+                paperQuestions.sort(() => Math.random() - 0.5);
+                paperQuestions = paperQuestions.slice(0, count);
+            }
+            
+            currentQuestions = paperQuestions;
+            
+            // 预览
+            const preview = document.getElementById('paper-preview');
+            const content = document.getElementById('paper-content');
+            preview.classList.remove('hidden');
+            
+            content.innerHTML = `
+                <h3 class="text-center font-bold text-lg mb-4">${GRADES[grade]}数学综合测试卷</h3>
+                <div class="text-center text-gray-500 text-sm mb-6">考试时间：60分钟  满分：100分</div>
+                ${paperQuestions.map((q, i) => `
+                    <div class="mb-4">
+                        <div class="font-medium">${i+1}. (${TYPES[q.type]}) ${q.content}</div>
+                        ${q.options ? `<div class="ml-4 text-gray-600">${q.options.join('<br>')}</div>` : ''}
+                    </div>
+                `).join('')}
+                <div style="page-break-before: always" class="mt-8 pt-4 border-t">
+                    <h4 class="font-bold mb-3">参考答案</h4>
+                    ${paperQuestions.map((q, i) => `
+                        <div class="text-sm mb-1">${i+1}. ${q.answer}</div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function printPaper() {
+            const content = document.getElementById('paper-content').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html><head><title>试卷打印</title>
+                <style>
+                    body{font-family:"Microsoft YaHei",sans-serif;padding:40px;line-height:1.8;}
+                    @media print {
+                        .page-break { page-break-before: always; }
+                    }
+                </style>
+                </head><body>${content}</body></html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // 页面切换监听
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(m => {
+                if (m.target.id === 'wrong-page' && m.target.classList.contains('active')) {
+                    loadWrongBook();
+                }
+                if (m.target.id === 'record-page' && m.target.classList.contains('active')) {
+                    loadStudyRecord();
+                }
+            });
+        });
+
+        document.querySelectorAll('.page').forEach(p => {
+            observer.observe(p, { attributes: true, attributeFilter: ['class'] });
+        });
+    </script>
+</body>
+</html>
