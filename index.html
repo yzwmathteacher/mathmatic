@@ -26,10 +26,10 @@
         }
     </script>
     <style>
-        /* 页面基础样式：默认全部隐藏，仅active页面显示，彻底解决多页面同时显示问题 */
-        .page { display: none; }
-        .page.active { display: block; }
-        
+        /* ========== 核心：所有页面默认隐藏，仅激活页面显示 ========== */
+        .page { display: none !important; }
+        .page.active { display: block !important; }
+
         .fade-in { animation: fadeIn 1s ease-in-out; }
         .slide-up { animation: slideUp 0.8s ease-out; }
         @keyframes fadeIn {
@@ -92,7 +92,7 @@
     <!-- 全局水印 -->
     <div class="watermark">大湾区智能刷题系统 © 专属版</div>
     
-    <!-- 全局加载遮罩（初始化显示，加载完成自动隐藏） -->
+    <!-- 全局加载遮罩 -->
     <div id="global-loading" class="loading-mask">
         <div class="text-center">
             <div class="loading-spinner mx-auto mb-3"></div>
@@ -100,7 +100,7 @@
         </div>
     </div>
 
-    <!-- 1. 欢迎动画页（默认显示） -->
+    <!-- ========== 1. 欢迎动画页（默认唯一显示） ========== -->
     <div id="welcome-page" class="page active min-h-screen bg-gradient-to-br from-primary to-dark flex flex-col items-center justify-center text-white">
         <div class="text-center fade-in">
             <div class="text-6xl font-bold mb-4">大湾区</div>
@@ -113,7 +113,7 @@
         </div>
     </div>
 
-    <!-- 2. 用户登录页 -->
+    <!-- ========== 2. 用户登录页（主菜单入口） ========== -->
     <div id="login-page" class="page min-h-screen flex items-center justify-center bg-light">
         <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md slide-up">
             <h2 class="text-2xl font-bold text-primary text-center mb-6">用户登录</h2>
@@ -127,17 +127,18 @@
                     <input type="password" id="login-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary" required>
                 </div>
                 <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg hover:bg-dark transition mb-4">登录</button>
-                <div class="text-center text-sm text-gray-600">
+                
+                <div class="text-center text-sm text-gray-600 mb-3">
                     没有账号？<a href="javascript:goToPage('register-page')" class="text-primary hover:underline">立即注册</a>
                 </div>
-                <div class="text-center text-xs text-gray-400 mt-4">
+                <div class="text-center text-xs text-gray-400 pt-3 border-t">
                     <a href="javascript:goToPage('teacher-login-page')" class="hover:text-primary">教师后台入口</a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 3. 注册页 -->
+    <!-- ========== 3. 用户注册页 ========== -->
     <div id="register-page" class="page min-h-screen flex items-center justify-center bg-light">
         <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md slide-up">
             <h2 class="text-2xl font-bold text-primary text-center mb-2">用户注册</h2>
@@ -185,7 +186,7 @@
         </div>
     </div>
 
-    <!-- 4. 主页（选题界面） -->
+    <!-- ========== 4. 用户主页（登录后进入） ========== -->
     <div id="home-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
@@ -287,7 +288,7 @@
         </main>
     </div>
 
-    <!-- 5. 刷题页面 -->
+    <!-- ========== 5. 刷题页面 ========== -->
     <div id="practice-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
@@ -342,7 +343,7 @@
         </main>
     </div>
 
-    <!-- 6. 错题本 -->
+    <!-- ========== 6. 错题本 ========== -->
     <div id="wrong-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
@@ -372,7 +373,7 @@
         </main>
     </div>
 
-    <!-- 7. 学习记录 -->
+    <!-- ========== 7. 学习报告 ========== -->
     <div id="record-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
@@ -414,7 +415,7 @@
         </main>
     </div>
 
-    <!-- 8. 家长自主出卷 -->
+    <!-- ========== 8. 家长自主出卷 ========== -->
     <div id="parent-paper-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
@@ -476,7 +477,7 @@
         </main>
     </div>
 
-    <!-- 9. 教师登录页 -->
+    <!-- ========== 9. 教师后台登录页 ========== -->
     <div id="teacher-login-page" class="page min-h-screen flex items-center justify-center bg-gray-100">
         <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
             <h2 class="text-2xl font-bold text-primary text-center mb-6">教师后台登录</h2>
@@ -497,7 +498,7 @@
         </div>
     </div>
 
-    <!-- 10. 教师后台 -->
+    <!-- ========== 10. 教师后台管理页 ========== -->
     <div id="teacher-admin-page" class="page min-h-screen bg-gray-100">
         <header class="bg-dark text-white p-4 shadow-md">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
@@ -678,11 +679,8 @@
         const TYPES = {calc:'简便计算',word:'应用题',choice:'选择题',fill:'填空题'};
         const MEMBER_TYPES = {monthly:'月会员',yearly:'年会员',permanent:'永久会员'};
         
-        // 题库版本号：内置兜底题库版本，更新内置题目时+1
         const QUESTION_BANK_VERSION = 2;
-        // 教师配置版本号：更新账号密码时+1，强制同步到本地
         const TEACHER_CONFIG_VERSION = 2;
-        // 云端题库地址（GitHub部署后自动同目录读取）
         const CLOUD_QUESTION_URL = './question-bank.json';
 
         let currentUser = null;
@@ -693,7 +691,6 @@
 
         // ==================== 工具函数 ====================
         function showToast(message, type = 'success') {
-            // 移除旧toast
             const old = document.querySelector('.toast');
             if (old) old.remove();
             
@@ -714,41 +711,102 @@
             return code;
         }
 
-        // ==================== 题库核心逻辑（解决更新不同步问题） ====================
-        // 内置兜底题库（离线/加载失败时使用）
+        // ==================== 页面切换核心函数（严格单页显示） ====================
+        function goToPage(pageId) {
+            // 1. 强制隐藏所有页面
+            const allPages = document.querySelectorAll('.page');
+            allPages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // 2. 显示目标页面
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+        }
+
+        // ==================== 欢迎动画与系统初始化 ====================
+        function skipWelcome() {
+            document.getElementById('global-loading').style.display = 'none';
+            checkLoginStatus();
+        }
+
+        window.onload = function() {
+            // 启动进度条动画
+            setTimeout(() => {
+                const bar = document.getElementById('loading-bar');
+                if (bar) bar.style.width = '100%';
+            }, 100);
+
+            // 后台异步初始化数据
+            initQuestionBank().catch(e => console.log('题库初始化异常:', e));
+            initTeacher();
+
+            // 3秒动画结束后，强制进入登录流程
+            setTimeout(() => {
+                // 隐藏加载遮罩
+                const loading = document.getElementById('global-loading');
+                if (loading) loading.style.display = 'none';
+                // 执行登录状态检查，自动跳转
+                checkLoginStatus();
+            }, 3000);
+        };
+
+        // 登录状态检查：未登录统一跳转到「用户登录页（主菜单）」
+        function checkLoginStatus() {
+            const saved = localStorage.getItem('currentUser');
+            if (saved) {
+                try {
+                    const user = JSON.parse(saved);
+                    if (checkMemberValid(user)) {
+                        currentUser = user;
+                        updateUserInfo();
+                        checkExpireWarning();
+                        goToPage('home-page');
+                        return;
+                    } else {
+                        localStorage.removeItem('currentUser');
+                        showToast('会员已过期，请重新登录', 'error');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('currentUser');
+                }
+            }
+            // 未登录 → 跳转到用户登录主页面
+            goToPage('login-page');
+        }
+
+        // ==================== 题库与教师初始化 ====================
         function getBuiltinQuestions() {
             return [
                 {id:1,city:'guangzhou',grade:'5',type:'calc',content:'计算：125×32×25',answer:'100000',analysis:'将32拆成8×4，利用乘法结合律：125×8=1000，4×25=100，1000×100=100000',source:'广州2023五年级期末'},
                 {id:2,city:'guangzhou',grade:'5',type:'calc',content:'计算：999×999+1999',answer:'1000000',analysis:'999×999+999+1000 = 999×(999+1)+1000 = 999000+1000 = 1000000',source:'广州2022五年级期末'},
                 {id:3,city:'shenzhen',grade:'6',type:'word',content:'一件商品先涨价20%，再降价20%，现价是原价的百分之几？',answer:'96%',analysis:'设原价为1，涨价后为1.2，降价后为1.2×0.8=0.96，即96%',source:'深圳2023六年级毕业考'},
-                {id:4,city:'zhongshan',grade:'7',type:'choice',content:'下列数中，是负数的是（ ）',options:['A. -(-3)','B. |-3|','C. (-3)²','D. -3²'],answer:'D',analysis:'-3² = -9，其余结果均为正数',source:'中山2023七年级期中'},
-                {id:5,city:'foshan',grade:'8',type:'fill',content:'因式分解：x² - 9 = ________',answer:'(x+3)(x-3)',analysis:'利用平方差公式：a²-b²=(a+b)(a-b)',source:'佛山2023八年级期末'},
-                {id:6,city:'guangzhou',grade:'6',type:'calc',content:'计算：1/2 + 1/6 + 1/12 + 1/20',answer:'4/5',analysis:'裂项相消：(1-1/2)+(1/2-1/3)+(1/3-1/4)+(1/4-1/5) = 1-1/5 = 4/5',source:'广州2023六年级竞赛'},
-                {id:7,city:'dongguan',grade:'7',type:'choice',content:'方程2x-1=3的解是（ ）',options:['A. x=-1','B. x=1','C. x=2','D. x=-2'],answer:'C',analysis:'2x=4，x=2',source:'东莞2023七年级期末'},
-                {id:8,city:'zhuhai',grade:'9',type:'fill',content:'一元二次方程x²-4x=0的两根为________',answer:'x1=0, x2=4',analysis:'因式分解x(x-4)=0，得x=0或x=4',source:'珠海2023九年级一模'}
+                {id:4,city:'zhongshan',grade:'7',type:'choice',content:'下列数中，是负数的是（ ）',options:['A. -(-3)','B. |-3|','C. (-3)²','D. -3²'],'answer':'D','analysis':'-3² = -9，其余结果均为正数','source':'中山2023七年级期中'},
+                {id:5,city:'foshan',grade:'8',type:'fill',content:'因式分解：x² - 9 = ________','answer':'(x+3)(x-3)','analysis':'利用平方差公式：a²-b²=(a+b)(a-b)','source':'佛山2023八年级期末'},
+                {id:6,city:'guangzhou',grade:'6',type:'calc',content:'计算：1/2 + 1/6 + 1/12 + 1/20','answer':'4/5','analysis':'裂项相消：(1-1/2)+(1/2-1/3)+(1/3-1/4)+(1/4-1/5) = 1-1/5 = 4/5','source':'广州2023六年级竞赛'},
+                {id:7,city:'dongguan',grade:'7',type:'choice',content:'方程2x-1=3的解是（ ）','options':['A. x=-1','B. x=1','C. x=2','D. x=-2'],'answer':'C','analysis':'2x=4，x=2','source':'东莞2023七年级期末'},
+                {id:8,city:'zhuhai',grade:'9',type:'fill',content:'一元二次方程x²-4x=0的两根为________','answer':'x1=0, x2=4','analysis':'因式分解x(x-4)=0，得x=0或x=4','source':'珠海2023九年级一模'}
             ];
         }
 
-        // 初始化题库：优先拉取云端JSON，失败则用内置兜底，自动合并本地自定义题目
         async function initQuestionBank() {
             const localVersion = localStorage.getItem('questionBankVersion') || 0;
             const localQuestions = JSON.parse(localStorage.getItem('questions') || '[]');
             
             try {
-                // 尝试拉取云端最新题库（加时间戳防浏览器缓存）
                 const res = await fetch(CLOUD_QUESTION_URL + '?t=' + Date.now());
                 if (res.ok) {
                     const cloudQuestions = await res.json();
-                    // 合并：云端题目优先，本地自定义题目保留（id不冲突的）
                     const mergedMap = new Map();
                     cloudQuestions.forEach(q => mergedMap.set(q.id, q));
                     localQuestions.forEach(q => {
-                        // 只保留本地新增的、云端没有的自定义题目
                         if (!mergedMap.has(q.id) && String(q.id).startsWith('local_')) {
                             mergedMap.set(q.id, q);
                         }
                     });
-                    
                     localStorage.setItem('questions', JSON.stringify(Array.from(mergedMap.values())));
                     localStorage.setItem('questionBankVersion', QUESTION_BANK_VERSION);
                     return;
@@ -757,24 +815,19 @@
                 console.log('云端题库拉取失败，使用本地版本:', e);
             }
 
-            // 云端拉取失败：检查内置题库版本
             if (!localStorage.getItem('questions')) {
-                // 首次访问：写入内置题库
                 localStorage.setItem('questions', JSON.stringify(getBuiltinQuestions()));
                 localStorage.setItem('questionBankVersion', QUESTION_BANK_VERSION);
             } else if (parseInt(localVersion) < QUESTION_BANK_VERSION) {
-                // 内置题库更新：合并升级
                 const builtin = getBuiltinQuestions();
                 const mergedMap = new Map();
                 localQuestions.forEach(q => mergedMap.set(q.id, q));
-                builtin.forEach(q => mergedMap.set(q.id, q)); // 内置题目覆盖旧版本
-                
+                builtin.forEach(q => mergedMap.set(q.id, q));
                 localStorage.setItem('questions', JSON.stringify(Array.from(mergedMap.values())));
                 localStorage.setItem('questionBankVersion', QUESTION_BANK_VERSION);
             }
         }
 
-        // 手动同步云端题库
         async function syncCloudQuestions() {
             showToast('正在同步云端题库...', 'warning');
             try {
@@ -800,79 +853,15 @@
             }
         }
 
-        // 初始化默认教师账号（带版本号，更新时强制同步）
         function initTeacher() {
             const localVersion = localStorage.getItem('teacherVersion') || 0;
             if (parseInt(localVersion) < TEACHER_CONFIG_VERSION) {
-                // 版本升级，强制更新为新的账号密码
                 localStorage.setItem('teacher', JSON.stringify({
                     username: 'yzw19990120',
                     password: 'awedsr134793'
                 }));
                 localStorage.setItem('teacherVersion', TEACHER_CONFIG_VERSION);
             }
-        }
-
-        // ==================== 页面切换核心函数 ====================
-        function goToPage(pageId) {
-            // 先全部隐藏
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            // 再显示目标页面
-            const target = document.getElementById(pageId);
-            if (target) {
-                target.classList.add('active');
-                window.scrollTo(0, 0);
-            }
-        }
-
-        // 跳过欢迎动画
-        function skipWelcome() {
-            document.getElementById('global-loading').style.display = 'none';
-            checkLoginStatus();
-        }
-
-        // 页面初始化主逻辑
-        window.onload = function() {
-            // 1. 启动欢迎动画进度条
-            setTimeout(() => {
-                const bar = document.getElementById('loading-bar');
-                if (bar) bar.style.width = '100%';
-            }, 100);
-
-            // 2. 后台异步加载题库和配置，不阻塞页面跳转
-            initQuestionBank().catch(e => console.log('题库初始化异常:', e));
-            initTeacher();
-
-            // 3. 3秒动画结束后，强制隐藏加载遮罩，执行登录状态检查并跳转
-            setTimeout(() => {
-                const loading = document.getElementById('global-loading');
-                if (loading) loading.style.display = 'none';
-                checkLoginStatus();
-            }, 3000);
-        };
-
-        // 检查登录状态，自动跳转
-        function checkLoginStatus() {
-            const saved = localStorage.getItem('currentUser');
-            if (saved) {
-                try {
-                    const user = JSON.parse(saved);
-                    if (checkMemberValid(user)) {
-                        currentUser = user;
-                        updateUserInfo();
-                        checkExpireWarning();
-                        goToPage('home-page');
-                        return;
-                    } else {
-                        localStorage.removeItem('currentUser');
-                        showToast('会员已过期，请重新登录', 'error');
-                    }
-                } catch (e) {
-                    localStorage.removeItem('currentUser');
-                }
-            }
-            // 未登录或登录失效，跳转到登录页
-            goToPage('login-page');
         }
 
         // ==================== 用户登录注册 ====================
@@ -941,7 +930,6 @@
                 return;
             }
             
-            // 验证邀请码
             const codes = JSON.parse(localStorage.getItem('inviteCodes') || '[]');
             const codeObj = codes.find(c => c.code === inviteCode && c.status === 'unused');
             
@@ -950,7 +938,6 @@
                 return;
             }
             
-            // 计算到期时间
             let expireTime;
             const now = new Date();
             if (codeObj.type === 'monthly') {
@@ -961,7 +948,6 @@
                 expireTime = 'permanent';
             }
             
-            // 创建用户
             const newUser = {
                 username,
                 password,
@@ -974,7 +960,6 @@
             users.push(newUser);
             localStorage.setItem('users', JSON.stringify(users));
             
-            // 更新邀请码状态
             codeObj.status = 'used';
             codeObj.usedBy = username;
             codeObj.usedTime = new Date().toISOString();
@@ -1017,11 +1002,8 @@
             currentQuestions = [];
             
             if (mode === 'real') {
-                // 真题模式：优先匹配城市+年级+题型
                 const allQuestions = JSON.parse(localStorage.getItem('questions') || '[]');
-                // 先匹配同城市的
                 let matched = allQuestions.filter(q => q.grade === grade && q.type === type && q.city === city);
-                // 不够就补其他城市同年级
                 if (matched.length < 5) {
                     const otherCity = allQuestions.filter(q => q.grade === grade && q.type === type && q.city !== city);
                     matched = matched.concat(otherCity);
@@ -1035,22 +1017,18 @@
                     generateAIQuestions(grade, type, 10 - currentQuestions.length);
                 }
             } else {
-                // AI出题模式
                 generateAIQuestions(grade, type, 10);
             }
             
-            // 打乱顺序
             currentQuestions.sort(() => Math.random() - 0.5);
             currentQuestionIndex = 0;
             renderQuestion();
             goToPage('practice-page');
         }
 
-        // AI智能出题（分学段难度）
         function generateAIQuestions(grade, type, count) {
             const gradeNum = parseInt(grade);
             const isPrimary = gradeNum <= 6;
-            const isJunior = gradeNum >= 7;
             
             for (let i = 0; i < count; i++) {
                 let q = {};
@@ -1061,7 +1039,6 @@
                 
                 if (type === 'calc') {
                     if (isPrimary) {
-                        // 小学简便计算
                         const patterns = [
                             () => {
                                 const a = Math.floor(Math.random()*90+10);
@@ -1070,16 +1047,6 @@
                             () => {
                                 const a = Math.floor(Math.random()*80+20);
                                 return {content:`计算：${a}×101 - ${a}`, answer: `${a*100}`, analysis:`乘法分配律：${a}×(101-1)=${a}×100=${a*100}`};
-                            },
-                            () => {
-                                const a = Math.floor(Math.random()*50+10);
-                                const b = Math.floor(Math.random()*10+2);
-                                return {content:`计算：${a}×${b}×5`, answer: `${a*b*5}`, analysis:`乘法结合律：先算${b}×5=${b*5}，再算${a}×${b*5}=${a*b*5}`};
-                            },
-                            () => {
-                                const a = Math.floor(Math.random()*200+100);
-                                const b = Math.floor(Math.random()*90+10);
-                                return {content:`计算：${a} - ${b} - ${Math.floor(b/2)}`, answer: `${a - b - Math.floor(b/2)}`, analysis:`减法性质：连续减去两个数等于减去它们的和`};
                             }
                         ];
                         const p = patterns[Math.floor(Math.random()*patterns.length)];
@@ -1088,11 +1055,9 @@
                         q.answer = res.answer;
                         q.analysis = res.analysis;
                     } else {
-                        // 初中计算
                         const patterns = [
                             () => ({content:'计算：(x+2)(x-2) + 4', answer:'x²', analysis:'平方差公式展开：x²-4+4 = x²'}),
-                            () => ({content:'因式分解：x² + 6x + 9', answer:'(x+3)²', analysis:'完全平方公式：a²+2ab+b²=(a+b)²'}),
-                            () => ({content:'计算：2⁰ + 2⁻¹', answer:'1.5', analysis:'任何非零数的0次方为1，负指数为倒数：1 + 1/2 = 1.5'})
+                            () => ({content:'因式分解：x² + 6x + 9', answer:'(x+3)²', analysis:'完全平方公式：a²+2ab+b²=(a+b)²'})
                         ];
                         const p = patterns[Math.floor(Math.random()*patterns.length)];
                         const res = p();
@@ -1103,32 +1068,13 @@
                 } else if (type === 'word') {
                     if (isPrimary) {
                         const num = Math.floor(Math.random()*20+10);
-                        const price = Math.floor(Math.random()*20+5);
-                        const scenarios = [
-                            {
-                                content:`商店运来${num}筐苹果，每筐重25千克，卖出一部分后还剩120千克，卖出了多少千克？`,
-                                answer: `${num*25 - 120}千克`,
-                                analysis: `总重量：${num}×25=${num*25}千克，卖出：${num*25}-120=${num*25-120}千克`
-                            },
-                            {
-                                content:`一本书有${num*8}页，小明每天看${num}页，看了5天后还剩多少页？`,
-                                answer: `${num*8 - num*5}页`,
-                                analysis: `已看：${num}×5=${num*5}页，剩余：${num*8}-${num*5}=${num*3}页`
-                            },
-                            {
-                                content:`一件上衣${price*3}元，一条裤子${price*2}元，买4套一共需要多少钱？`,
-                                answer: `${(price*3 + price*2)*4}元`,
-                                analysis: `一套价格：${price*3}+${price*2}=${price*5}元，4套：${price*5}×4=${(price*5)*4}元`
-                            }
-                        ];
-                        const s = scenarios[Math.floor(Math.random()*scenarios.length)];
-                        q.content = s.content;
-                        q.answer = s.answer;
-                        q.analysis = s.analysis;
+                        q.content = `商店运来${num}筐苹果，每筐重25千克，卖出一部分后还剩120千克，卖出了多少千克？`;
+                        q.answer = `${num*25 - 120}千克`;
+                        q.analysis = `总重量：${num}×25=${num*25}千克，卖出：${num*25}-120=${num*25-120}千克`;
                     } else {
                         q.content = '甲乙两地相距360km，一辆汽车从甲地开往乙地，2小时行了全程的40%，照这样速度，行完全程需要多少小时？';
                         q.answer = '5小时';
-                        q.analysis = '速度：360×40%÷2=72km/h，总时间：360÷72=5小时；或直接 2÷40%=5小时';
+                        q.analysis = '速度：360×40%÷2=72km/h，总时间：360÷72=5小时';
                     }
                 } else if (type === 'choice') {
                     if (isPrimary) {
@@ -1168,18 +1114,15 @@
             document.getElementById('question-source').textContent = '来源：' + (q.source || '自定义');
             document.getElementById('question-content').textContent = q.content;
             
-            // 重置界面
             document.getElementById('analysis-panel').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
             document.getElementById('submit-btn').classList.remove('hidden');
             document.getElementById('user-answer').value = '';
             currentSelectedOption = null;
             
-            // 分数提示检测
-            const hasFraction = q.content.includes('/') || q.content.includes('分之') || q.content.includes('分数') || (q.answer && q.answer.includes('/'));
+            const hasFraction = q.content.includes('/') || q.content.includes('分之') || (q.answer && q.answer.includes('/'));
             document.getElementById('fraction-tip').classList.toggle('hidden', !hasFraction);
             
-            // 选择题/其他题型切换
             if (q.type === 'choice' && q.options) {
                 document.getElementById('choice-options').classList.remove('hidden');
                 document.getElementById('answer-input-area').classList.add('hidden');
@@ -1224,11 +1167,9 @@
                 }
             }
             
-            // 宽松比对：去空格、统一大小写、统一标点
             const normalize = (s) => String(s).toLowerCase().replace(/\s/g, '').replace(/，/g, ',').replace(/。/g, '').replace(/元|千克|页|小时/g, '');
             const isCorrect = normalize(userAnswer) === normalize(q.answer);
             
-            // 显示解析
             const panel = document.getElementById('analysis-panel');
             panel.classList.remove('hidden');
             panel.className = `border rounded-xl p-6 ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
@@ -1241,7 +1182,6 @@
             document.getElementById('next-btn').classList.remove('hidden');
             document.getElementById('submit-btn').classList.add('hidden');
             
-            // 记录答题数据
             recordAnswer(q, isCorrect, userAnswer);
         }
 
@@ -1264,12 +1204,10 @@
             }
         }
 
-        // 记录答题
         function recordAnswer(question, isCorrect, userAnswer) {
             if (!currentUser) return;
             const username = currentUser.username;
             
-            // 错题本
             if (!isCorrect) {
                 const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
                 if (!wrongBook.find(w => w.questionId === question.id)) {
@@ -1283,7 +1221,6 @@
                     localStorage.setItem('wrongBook_' + username, JSON.stringify(wrongBook));
                 }
             } else {
-                // 答对了标记为已掌握
                 const wrongBook = JSON.parse(localStorage.getItem('wrongBook_' + username) || '[]');
                 const idx = wrongBook.findIndex(w => w.questionId === question.id);
                 if (idx !== -1) {
@@ -1292,7 +1229,6 @@
                 }
             }
             
-            // 学习记录
             const records = JSON.parse(localStorage.getItem('records_' + username) || '[]');
             records.unshift({
                 time: new Date().toISOString(),
@@ -1300,7 +1236,6 @@
                 type: question.type,
                 correct: isCorrect
             });
-            // 只保留最近500条
             if (records.length > 500) records.length = 500;
             localStorage.setItem('records_' + username, JSON.stringify(records));
         }
@@ -1400,7 +1335,6 @@
             document.getElementById('accuracy-rate').textContent = accuracy;
             document.getElementById('wrong-count').textContent = wrongBook.filter(w => !w.mastered).length;
             
-            // 生成建议
             const adviceEl = document.getElementById('study-advice');
             if (total < 10) {
                 adviceEl.textContent = '目前练习量较少，建议每天坚持10-15道题，积累足够数据后系统将给出更精准的个性化建议。';
@@ -1415,7 +1349,6 @@
                     advice = '💪 基础需要加强，建议从课本例题入手，先保证基础题正确率，再逐步提升难度，不要急于求成。';
                 }
                 
-                // 统计薄弱题型
                 const typeStats = {};
                 records.forEach(r => {
                     if (!typeStats[r.type]) typeStats[r.type] = {total:0, wrong:0};
@@ -1439,7 +1372,6 @@
                 adviceEl.textContent = advice;
             }
             
-            // 记录列表
             const recordList = document.getElementById('record-list');
             const recent = records.slice(0, 10);
             recordList.innerHTML = recent.map(r => `
@@ -1470,8 +1402,6 @@
             }
             
             currentQuestions = [];
-            
-            // 先从真题库取，不够用AI补
             const allQuestions = JSON.parse(localStorage.getItem('questions') || '[]');
             
             const addQuestions = (type, count) => {
@@ -1526,13 +1456,11 @@
             const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
             if (activeTab) activeTab.classList.add('bg-blue-100', 'text-primary');
             
-            // 加载对应数据
             if (tabName === 'user-manage') loadUserManage();
             if (tabName === 'invite-manage') loadInviteManage();
             if (tabName === 'question-manage') loadQuestionManage();
         }
 
-        // 用户管理
         function loadUserManage() {
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             const tbody = document.getElementById('user-table-body');
@@ -1601,7 +1529,6 @@
             showToast('用户已删除');
         }
 
-        // 邀请码管理
         function generateInviteCodes() {
             const type = document.getElementById('invite-type').value;
             const count = parseInt(document.getElementById('invite-count').value);
@@ -1694,7 +1621,6 @@
             loadInviteManage();
         }
 
-        // 题库管理
         function loadQuestionManage() {
             const questions = JSON.parse(localStorage.getItem('questions') || '[]');
             const container = document.getElementById('question-list');
@@ -1801,7 +1727,6 @@
             `).join('');
         }
 
-        // 教师智能组卷
         function teacherGeneratePaper() {
             const grade = document.getElementById('t-paper-grade').value;
             const count = parseInt(document.getElementById('t-paper-count').value);
@@ -1810,7 +1735,6 @@
             let paperQuestions = questions.filter(q => q.grade === grade);
             
             if (paperQuestions.length < count) {
-                // 不够用AI补
                 const need = count - paperQuestions.length;
                 generateAIQuestions(grade, 'calc', Math.ceil(need/2));
                 generateAIQuestions(grade, 'word', Math.floor(need/2));
@@ -1822,7 +1746,6 @@
             
             currentQuestions = paperQuestions;
             
-            // 预览
             const preview = document.getElementById('paper-preview');
             const content = document.getElementById('paper-content');
             preview.classList.remove('hidden');
