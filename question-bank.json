@@ -1,0 +1,22 @@
+[
+    {"id":1,"city":"guangzhou","grade":"5","type":"calc","content":"计算：125×32×25","answer":"100000","analysis":"将32拆成8×4，利用乘法结合律：125×8=1000，4×25=100，1000×100=100000","source":"广州2023五年级期末"},
+    {"id":2,"city":"guangzhou","grade":"5","type":"calc","content":"计算：999×999+1999","answer":"1000000","analysis":"999×999+999+1000 = 999×(999+1)+1000 = 999000+1000 = 1000000","source":"广州2022五年级期末"},
+    {"id":3,"city":"shenzhen","grade":"6","type":"word","content":"一件商品先涨价20%，再降价20%，现价是原价的百分之几？","answer":"96%","analysis":"设原价为1，涨价后为1.2，降价后为1.2×0.8=0.96，即96%","source":"深圳2023六年级毕业考"},
+    {"id":4,"city":"zhongshan","grade":"7","type":"choice","content":"下列数中，是负数的是（ ）","options":["A. -(-3)","B. |-3|","C. (-3)²","D. -3²"],"answer":"D","analysis":"-3² = -9，其余结果均为正数","source":"中山2023七年级期中"},
+    {"id":5,"city":"foshan","grade":"8","type":"fill","content":"因式分解：x² - 9 = ________","answer":"(x+3)(x-3)","analysis":"利用平方差公式：a²-b²=(a+b)(a-b)","source":"佛山2023八年级期末"},
+    {"id":6,"city":"guangzhou","grade":"6","type":"calc","content":"计算：1/2 + 1/6 + 1/12 + 1/20","answer":"4/5","analysis":"裂项相消：(1-1/2)+(1/2-1/3)+(1/3-1/4)+(1/4-1/5) = 1-1/5 = 4/5","source":"广州2023六年级竞赛"},
+    {"id":7,"city":"dongguan","grade":"7","type":"choice","content":"方程2x-1=3的解是（ ）","options":["A. x=-1","B. x=1","C. x=2","D. x=-2"],"answer":"C","analysis":"2x=4，x=2","source":"东莞2023七年级期末"},
+    {"id":8,"city":"zhuhai","grade":"9","type":"fill","content":"一元二次方程x²-4x=0的两根为________","answer":"x1=0, x2=4","analysis":"因式分解x(x-4)=0，得x=0或x=4","source":"珠海2023九年级一模"},
+    {"id":9,"city":"guangzhou","grade":"4","type":"calc","content":"计算：25×(40+4)","answer":"1100","analysis":"乘法分配律：25×40 + 25×4 = 1000 + 100 = 1100","source":"广州2024四年级期中"},
+    {"id":10,"city":"shenzhen","grade":"5","type":"word","content":"小明看一本300页的故事书，第一天看了全书的1/5，第二天看了全书的1/6，两天一共看了多少页？","answer":"110页","analysis":"第一天：300×1/5=60页，第二天：300×1/6=50页，合计60+50=110页","source":"深圳2024五年级期末"},
+    {"id":11,"city":"foshan","grade":"4","type":"fill","content":"一个长方形的长是12厘米，宽是8厘米，周长是____厘米","answer":"40","analysis":"长方形周长=(长+宽)×2 = (12+8)×2 = 40厘米","source":"佛山2024四年级期末"},
+    {"id":12,"city":"dongguan","grade":"6","type":"choice","content":"下面百分率可能大于100%的是（ ）","options":["A. 成活率","B. 发芽率","C. 增长率","D. 出勤率"],"answer":"C","analysis":"增长率可以超过100%，其余成活率、发芽率、出勤率最高为100%","source":"东莞2023六年级期中"},
+    {"id":13,"city":"zhongshan","grade":"5","type":"calc","content":"计算：3600÷25÷4","answer":"36","analysis":"除法性质：连续除以两个数等于除以它们的积，3600÷(25×4)=3600÷100=36","source":"中山2024五年级期末"},
+    {"id":14,"city":"huizhou","grade":"7","type":"fill","content":"-3的相反数是______","answer":"3","analysis":"只有符号不同的两个数互为相反数，-3的相反数是3","source":"惠州2023七年级期中"},
+    {"id":15,"city":"jiangmen","grade":"8","type":"choice","content":"下列函数中，是一次函数的是（ ）","options":["A. y=1/x","B. y=x²","C. y=2x+1","D. y=√x"],"answer":"C","analysis":"一次函数形如y=kx+b(k≠0)，y=2x+1符合定义","source":"江门2024八年级期中"},
+    {"id":16,"city":"zhaoqing","grade":"9","type":"word","content":"某商店经销一种商品，每件进价40元，售价60元，每天可卖出200件。每件涨价1元，每天少卖10件。每件涨价多少元时，每天利润最大？","answer":"5元","analysis":"设涨价x元，利润=(20+x)(200-10x)，配方得顶点x=5时利润最大","source":"肇庆2023九年级二模"},
+    {"id":17,"city":"guangzhou","grade":"3","type":"calc","content":"计算：45+99+55","answer":"199","analysis":"加法交换律：45+55+99 = 100+99 = 199","source":"广州2024三年级期末"},
+    {"id":18,"city":"shenzhen","grade":"3","type":"word","content":"学校图书馆有故事书120本，科技书比故事书多35本，两种书一共有多少本？","answer":"275本","analysis":"科技书：120+35=155本，一共：120+155=275本","source":"深圳2023三年级期末"},
+    {"id":19,"city":"foshan","grade":"7","type":"calc","content":"计算：(-2)³ + (-3)²","answer":"1","analysis":"(-2)³=-8，(-3)²=9，-8+9=1","source":"佛山2024七年级期中"},
+    {"id":20,"city":"zhongshan","grade":"8","type":"fill","content":"已知一次函数y=kx+b过点(0,2)和(1,5)，则k=______","answer":"3","analysis":"代入(0,2)得b=2，代入(1,5)得k+2=5，k=3","source":"中山2024八年级期末"}
+]
