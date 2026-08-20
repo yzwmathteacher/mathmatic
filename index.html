@@ -26,7 +26,7 @@
         }
     </script>
     <style>
-        /* ========== 核心：所有页面默认隐藏，仅激活页面显示 ========== */
+        /* 核心：所有页面默认隐藏，仅激活页面显示 */
         .page { display: none !important; }
         .page.active { display: block !important; }
 
@@ -100,7 +100,7 @@
         </div>
     </div>
 
-    <!-- ========== 1. 欢迎动画页（默认唯一显示） ========== -->
+    <!-- 1. 欢迎动画页（默认唯一显示） -->
     <div id="welcome-page" class="page active min-h-screen bg-gradient-to-br from-primary to-dark flex flex-col items-center justify-center text-white">
         <div class="text-center fade-in">
             <div class="text-6xl font-bold mb-4">大湾区</div>
@@ -113,7 +113,7 @@
         </div>
     </div>
 
-    <!-- ========== 2. 用户登录页（主菜单入口） ========== -->
+    <!-- 2. 用户登录页（主菜单入口） -->
     <div id="login-page" class="page min-h-screen flex items-center justify-center bg-light">
         <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md slide-up">
             <h2 class="text-2xl font-bold text-primary text-center mb-6">用户登录</h2>
@@ -138,7 +138,7 @@
         </div>
     </div>
 
-    <!-- ========== 3. 用户注册页 ========== -->
+    <!-- 3. 用户注册页 -->
     <div id="register-page" class="page min-h-screen flex items-center justify-center bg-light">
         <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md slide-up">
             <h2 class="text-2xl font-bold text-primary text-center mb-2">用户注册</h2>
@@ -186,7 +186,7 @@
         </div>
     </div>
 
-    <!-- ========== 4. 用户主页（登录后进入） ========== -->
+    <!-- 4. 用户主页（登录后进入） -->
     <div id="home-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
@@ -288,7 +288,7 @@
         </main>
     </div>
 
-    <!-- ========== 5. 刷题页面 ========== -->
+    <!-- 5. 刷题页面 -->
     <div id="practice-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
@@ -343,7 +343,7 @@
         </main>
     </div>
 
-    <!-- ========== 6. 错题本 ========== -->
+    <!-- 6. 错题本 -->
     <div id="wrong-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
@@ -373,7 +373,7 @@
         </main>
     </div>
 
-    <!-- ========== 7. 学习报告 ========== -->
+    <!-- 7. 学习报告 -->
     <div id="record-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
@@ -415,7 +415,7 @@
         </main>
     </div>
 
-    <!-- ========== 8. 家长自主出卷 ========== -->
+    <!-- 8. 家长自主出卷 -->
     <div id="parent-paper-page" class="page min-h-screen bg-gray-50">
         <header class="bg-primary text-white p-4 shadow-md">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
@@ -477,7 +477,7 @@
         </main>
     </div>
 
-    <!-- ========== 9. 教师后台登录页 ========== -->
+    <!-- 9. 教师后台登录页 -->
     <div id="teacher-login-page" class="page min-h-screen flex items-center justify-center bg-gray-100">
         <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
             <h2 class="text-2xl font-bold text-primary text-center mb-6">教师后台登录</h2>
@@ -498,7 +498,7 @@
         </div>
     </div>
 
-    <!-- ========== 10. 教师后台管理页 ========== -->
+    <!-- 10. 教师后台管理页 -->
     <div id="teacher-admin-page" class="page min-h-screen bg-gray-100">
         <header class="bg-dark text-white p-4 shadow-md">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
@@ -573,6 +573,7 @@
                                 导出未使用邀请码
                             </button>
                         </div>
+                        <p class="text-xs text-gray-500">⚠️ 生成的邀请码需同步到 GitHub 的 invite-codes.json 文件后，家长端才能使用</p>
                     </div>
                     <div class="bg-white rounded-lg shadow p-4">
                         <table class="w-full text-sm">
@@ -682,6 +683,7 @@
         const QUESTION_BANK_VERSION = 2;
         const TEACHER_CONFIG_VERSION = 2;
         const CLOUD_QUESTION_URL = './question-bank.json';
+        const CLOUD_INVITE_URL = './invite-codes.json'; // 云端邀请码白名单
 
         let currentUser = null;
         let currentQuestions = [];
@@ -711,15 +713,11 @@
             return code;
         }
 
-        // ==================== 页面切换核心函数（严格单页显示） ====================
+        // ==================== 页面切换核心函数 ====================
         function goToPage(pageId) {
-            // 1. 强制隐藏所有页面
             const allPages = document.querySelectorAll('.page');
-            allPages.forEach(page => {
-                page.classList.remove('active');
-            });
+            allPages.forEach(page => page.classList.remove('active'));
 
-            // 2. 显示目标页面
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
                 targetPage.classList.add('active');
@@ -734,27 +732,21 @@
         }
 
         window.onload = function() {
-            // 启动进度条动画
             setTimeout(() => {
                 const bar = document.getElementById('loading-bar');
                 if (bar) bar.style.width = '100%';
             }, 100);
 
-            // 后台异步初始化数据
             initQuestionBank().catch(e => console.log('题库初始化异常:', e));
             initTeacher();
 
-            // 3秒动画结束后，强制进入登录流程
             setTimeout(() => {
-                // 隐藏加载遮罩
                 const loading = document.getElementById('global-loading');
                 if (loading) loading.style.display = 'none';
-                // 执行登录状态检查，自动跳转
                 checkLoginStatus();
             }, 3000);
         };
 
-        // 登录状态检查：未登录统一跳转到「用户登录页（主菜单）」
         function checkLoginStatus() {
             const saved = localStorage.getItem('currentUser');
             if (saved) {
@@ -774,7 +766,6 @@
                     localStorage.removeItem('currentUser');
                 }
             }
-            // 未登录 → 跳转到用户登录主页面
             goToPage('login-page');
         }
 
@@ -909,7 +900,8 @@
             }
         }
 
-        function handleRegister(e) {
+        // ========== 核心：云端邀请码验证注册 ==========
+        async function handleRegister(e) {
             e.preventDefault();
             const username = document.getElementById('reg-username').value.trim();
             const password = document.getElementById('reg-password').value;
@@ -930,43 +922,59 @@
                 return;
             }
             
-            const codes = JSON.parse(localStorage.getItem('inviteCodes') || '[]');
-            const codeObj = codes.find(c => c.code === inviteCode && c.status === 'unused');
-            
-            if (!codeObj) {
-                showToast('邀请码无效或已被使用', 'error');
-                return;
+            // 从云端拉取邀请码白名单验证
+            try {
+                const res = await fetch(CLOUD_INVITE_URL + '?t=' + Date.now());
+                if (!res.ok) throw new Error('邀请码验证服务异常');
+                
+                const cloudCodes = await res.json();
+                const codeObj = cloudCodes.find(c => c.code === inviteCode && c.status === 'unused');
+                
+                if (!codeObj) {
+                    showToast('邀请码无效或已被使用', 'error');
+                    return;
+                }
+
+                // 计算会员到期时间
+                let expireTime;
+                const now = new Date();
+                if (codeObj.type === 'monthly') {
+                    expireTime = new Date(now.setMonth(now.getMonth() + 1)).toISOString();
+                } else if (codeObj.type === 'yearly') {
+                    expireTime = new Date(now.setFullYear(now.getFullYear() + 1)).toISOString();
+                } else {
+                    expireTime = 'permanent';
+                }
+                
+                // 创建用户
+                const newUser = {
+                    username,
+                    password,
+                    memberType: codeObj.type,
+                    inviteCode,
+                    expireTime,
+                    createTime: new Date().toISOString()
+                };
+                
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                // 本地标记已使用，避免同一设备重复注册
+                const localCodes = JSON.parse(localStorage.getItem('inviteCodes') || '[]');
+                const localCode = localCodes.find(c => c.code === inviteCode);
+                if (localCode) {
+                    localCode.status = 'used';
+                    localCode.usedBy = username;
+                    localCode.usedTime = new Date().toISOString();
+                    localStorage.setItem('inviteCodes', JSON.stringify(localCodes));
+                }
+                
+                showToast('注册成功，请登录');
+                setTimeout(() => goToPage('login-page'), 1000);
+            } catch (e) {
+                console.log('邀请码验证失败:', e);
+                showToast('验证失败，请检查网络或联系开发者', 'error');
             }
-            
-            let expireTime;
-            const now = new Date();
-            if (codeObj.type === 'monthly') {
-                expireTime = new Date(now.setMonth(now.getMonth() + 1)).toISOString();
-            } else if (codeObj.type === 'yearly') {
-                expireTime = new Date(now.setFullYear(now.getFullYear() + 1)).toISOString();
-            } else {
-                expireTime = 'permanent';
-            }
-            
-            const newUser = {
-                username,
-                password,
-                memberType: codeObj.type,
-                inviteCode,
-                expireTime,
-                createTime: new Date().toISOString()
-            };
-            
-            users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            codeObj.status = 'used';
-            codeObj.usedBy = username;
-            codeObj.usedTime = new Date().toISOString();
-            localStorage.setItem('inviteCodes', JSON.stringify(codes));
-            
-            showToast('注册成功，请登录');
-            setTimeout(() => goToPage('login-page'), 1000);
         }
 
         function logout() {
@@ -1561,7 +1569,7 @@
             const codes = JSON.parse(localStorage.getItem('inviteCodes') || '[]');
             const unused = codes.filter(c => c.status === 'unused');
             
-            if (unused.length === 0) {
+                        if (unused.length === 0) {
                 showToast('暂无未使用的邀请码', 'warning');
                 return;
             }
